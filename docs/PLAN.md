@@ -22,7 +22,7 @@ judgment calls, Sonnet for mechanical breadth.
 
 ## Phase 1 — The physics table
 
-- [ ] Decide the propulsion profile and therefore why the trip takes a year
+- [x] Decide the propulsion profile and therefore why the trip takes a year
 - [ ] Model the trajectory as a pure function of mission time
 - [ ] Fix the phase schedule and its day boundaries
 - [ ] Validate continuity, monotonic invariants, and agreement with real reference values
