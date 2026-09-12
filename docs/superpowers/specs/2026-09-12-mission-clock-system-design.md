@@ -168,11 +168,20 @@ Three registers stacked vertically, each honest about a different thing.
 The majority of the frame. A cinematic near view of the ship with Earth behind and
 Moon ahead, both scaled by true distance from the physics table.
 
-This is where the year reads. Earth fills roughly a third of the frame in the first
-month, the two bodies are comparable around month seven, and the Moon dominates while
-Earth becomes a small marble by the final weeks. This progression is the single most
-important thing the design has to deliver, and it is legible at a glance without any
-numbers.
+This is where the year reads. Earth's angular diameter falls from 152.7° in low Earth orbit
+to 1.91° at the Moon, while the Moon grows from 0.53° to filling the frame. At 302,106 km
+from Earth the two subtend exactly the same angle, 2.42°: a real waypoint, and the moment the
+destination stops being the smaller object. It deserves a beat.
+
+Correcting an earlier assumption: Earth never becomes a pinprick. From the Moon it is 3.67×
+the apparent size of the Moon seen from Earth, and 13.5× the apparent area. It ends as a
+distinct blue disc. The arc is still enormous and it is legible at a glance without numbers,
+but the final frame is a world, not a dot.
+
+Free daily variation comes at no cost: Earth rotates once every 24 hours beneath a nearly
+fixed terminator, so a different hemisphere faces the ship each half day. The terminator is a
+straight line only at exactly half phase; at any other phase it is an ellipse bowing the
+correct way. See `docs/reference/trajectory-constants.md`.
 
 ### 7.2 Trajectory ribbon
 
