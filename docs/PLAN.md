@@ -111,7 +111,7 @@ judgment calls, Sonnet for mechanical breadth.
 - [ ] Full-year sweep test passing on all 366 days
 - [ ] Responsive, theme and reduced-motion checks
 - [ ] Encrypt the content spec, sealed to touchdown
-- [ ] Deploy
+- [ ] Enable GitHub Pages on `emoucsd/emoucsd.github.io` and deploy
 - [ ] Verify today renders correctly and the past replays correctly
 
 **Exit:** the page is live and the owner can open it.
@@ -119,8 +119,20 @@ judgment calls, Sonnet for mechanical breadth.
 
 ---
 
+## Settled facts
+
+| | |
+|---|---|
+| Repository | `emoucsd/emoucsd.github.io`, branch `main`, public |
+| Hosting | GitHub Pages |
+| Clock | US Pacific, anchored permanently |
+| Launch / touchdown | 2026-08-31 / 2027-08-31 |
+
+---
+
 ## Standing rules
 
 - Nothing narrative is ever reported in conversation.
+- The repository is public, so commit messages for content work must reveal nothing about content.
 - The red team runs continuously and its findings are addressed, not filed.
 - Every phase from 3 onward keeps a running fair-play ledger.

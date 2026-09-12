@@ -355,15 +355,20 @@ GitHub Pages via GitHub Actions on push to the default branch. The workflow runs
 sweep and refuses to deploy on failure. Static assets only. The repository URL is supplied by
 the owner.
 
-**Repository visibility: private for the duration of the mission, made public at touchdown**
-as part of the monument, when the content and the sealed content spec unlock anyway. Private
-during the year removes a class of problems entirely: nobody can diff two commits to infer
-structure, and commit sizes and timestamps leak nothing.
+**Repository: `emoucsd/emoucsd.github.io`, branch `main`, public.**
 
-Note that a private repository can still serve a public Pages site on paid plans; on a free
-plan the Pages site is private too. Confirm the plan before phase 7, since a private Pages
-site requires the viewer to be signed in, which is fine for an audience of one but changes
-how the page is opened on a phone.
+This is a user-site repository, so on a free plan it must be public for Pages to serve at all.
+Public is therefore the settled choice, and it costs little. All day content is ciphertext, and
+the sealed content spec is ciphertext, so the repository being readable reveals the engine and
+not the story. The account is separate from the owner's real-name professional presence, which
+provides the separation that private visibility would otherwise have provided.
+
+Two consequences accepted rather than mitigated:
+
+- Commit timestamps, file sizes and message text are visible and leak a small amount of
+  structure. Commit messages for content work must therefore say nothing about content.
+- Anyone who finds the URL can open the page. Nothing links to it, and there is nothing
+  sensitive on it.
 
 ## 15. Key decisions
 
@@ -376,7 +381,7 @@ how the page is opened on a phone.
 | Content storage | Pre-generated, per-day encrypted | Determinism plus a seal against accidental spoiling |
 | Setting | Present day, real world, real hardware | The reader should be able to imagine reading about this mission in a news article this year |
 | Time anchor | US Pacific, permanently | Travel must never skip or repeat a day in a 365-day count |
-| Repo visibility | Private now, public at touchdown | Removes inference from commit history during the mission |
+| Repo visibility | Public | Required for Pages on a free user-site repo; content is ciphertext, and the account is separate from the owner's real-name presence |
 | Agency | None | Watch-only removes the possibility of failing your own mission |
 | Art direction | Vector realism, full colour | The Earth/Moon scale change is the primary signal |
 
@@ -403,7 +408,6 @@ the same engine.
 | Item | Owner | Blocking? |
 |---|---|---|
 | Propulsion profile and final phase schedule | Content spec | No. The renderer treats phases as data. |
-| GitHub repository URL | Project owner | Phase 7 only |
-| Whether the GitHub plan permits a public Pages site from a private repository | Project owner | Phase 7 only |
+| Enable GitHub Pages on the repository | Phase 7 | No |
 
 All other decisions in this document are settled.
