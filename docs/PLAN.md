@@ -64,9 +64,11 @@ judgment calls, Sonnet for mechanical breadth.
 ## Phase 4 — The visual system
 
 - [ ] Palette, lighting model, type scale, chrome
-- [ ] Vehicle silhouette and its idle and attentive motion
+- [ ] Vehicle silhouette as a lander-plus-cruise-module stack, and its idle and attentive motion
+- [ ] The archive view
+- [ ] The instrument figure vocabulary
 - [ ] Earth and Moon renderers, including level-of-detail across a 300:1 scale change
-- [ ] The hero-view framing rule
+- [ ] The hero-view framing rule, scaled to the orbit rather than instantaneous range
 - [ ] The trajectory ribbon
 - [ ] The fixed anomaly rendering vocabulary
 - [ ] Renderer built end to end against placeholder content

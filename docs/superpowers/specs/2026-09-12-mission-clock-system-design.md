@@ -175,6 +175,13 @@ Three registers stacked vertically, each honest about a different thing.
 The majority of the frame. A cinematic near view of the ship with Earth behind and
 Moon ahead, both scaled by true distance from the physics table.
 
+**The hero view scales to the orbit, not to the instantaneous position.** The craft flies a
+spiral of growing ellipses, so its true range swings hard every revolution, by the end across
+ten days. Rendering apparent size from that instantaneous range makes both bodies pulse, which
+is honest and unusable on a page glanced at once a day. Apparent size is therefore computed
+from the current osculating orbit, which changes slowly and only in one direction. The rushing
+out and falling back is still shown, in the telemetry and on the ribbon, where it belongs.
+
 This is where the year reads. Earth's angular diameter falls from 152.7° in low Earth orbit
 to 1.91° at the Moon, while the Moon grows from 0.53° to filling the frame. At 302,106 km
 from Earth the two subtend exactly the same angle, 2.42°: a real waypoint, and the moment the
@@ -199,12 +206,36 @@ the scrub bar to that day.
 This register exists to be truthful where the hero view is cinematic. One day is
 0.27% of the arc and it looks like it.
 
-### 7.3 Log panel
+### 7.3 Log column
 
-Today's entry from the ship, with previous days scrollable above it. Active anomaly
-investigations (§8) appear here as a pinned situation list until they resolve.
+Today's entry, with roughly the last ten days scrollable above it, dimming as they recede and
+dissolving into the void at both ends rather than being clipped by an edge. Active anomaly
+investigations (§8) stay pinned here until they resolve.
 
-At phone width this becomes a sheet that pulls up over the hero view.
+This is the margin, not the archive. It holds the recent tail.
+
+At phone width it becomes a sheet that pulls up over the hero view.
+
+### 7.3a The archive
+
+A separate view, opened deliberately, holding every day since launch. Where the log column is
+a glance, the archive is for sitting down with. It carries the full text of every entry, every
+resolved investigation, every encyclopedia entry, and every instrument figure, browsable by
+date and by phase.
+
+The archive is what the piece becomes after touchdown (§12), so it is built as a first-class
+view from the start rather than retrofitted.
+
+### 7.3b The vehicle
+
+The craft flies as a stack and reads as a rocket rather than a satellite: a lander with a
+descent engine and stowed legs, riding a cruise module carrying the solar arrays and the ion
+thruster. Both parts are visible for the whole spiral. They separate near the end, which is a
+real event the design gets for free rather than a contrivance.
+
+Personality is expressed through motion, never speech: array tracking, dish slews, the slow
+attitude changes when the craft turns to look at something, thruster state. What it does when
+idle differs from what it does when it is paying attention.
 
 ### 7.4 Chrome
 
@@ -232,10 +263,38 @@ Four tiers, described here purely as containers.
 
 | Tier | Frequency | Container |
 |---|---|---|
-| Daily log | Every day, 365 total | Title, body, timestamp |
+| Daily log | Every day, 365 total | Title, body, timestamp, optional figure |
 | Event card | ~30–40 per year | Title, body, optional scene modifier |
 | Anomaly investigation | ~4–8 per year | Multi-day: opens, ticks, resolves |
 | Encyclopedia entry | ~2 per month | Title, body, source attribution |
+| Instrument figure | ~1 in 4 days | A named, parameterised diagram (see below) |
+
+**Reading time is a design constraint.** A day's entry should take longer than about twenty
+seconds and less than about a minute. In practice that is 120 to 250 words on an ordinary day,
+shorter on a deliberately empty one, and materially longer when something happens. Variance is
+wanted: a year of identically-sized entries is its own kind of boring. The full-year sweep
+lints word counts against this band and reports the distribution.
+
+**Something must change visually every day.** Even on a nothing day the scene differs from
+yesterday: the orbit has grown, the terminator has moved, a different hemisphere faces the
+craft, the instrument pointing has changed. A day where the picture is identical to the
+previous day is a lint failure.
+
+### 8.1 Instrument figures
+
+The craft is a survey scout, so it produces data products, and those are the honest form of a
+picture in a log. Not photographs, which would need external assets, but diagrams the craft
+would actually generate, drawn as vectors from parameters:
+
+- a spectrum with marked absorption features
+- a thermal patch in false colour over a terrain outline
+- a star-field crop with an object circled and its magnitude noted
+- a ranging return, amplitude against time
+- a power and thermal strip chart across a revolution
+- a pointing diagram showing what the craft turned to look at
+
+Each is a named element in the same fixed vocabulary as scene modifiers, so content selects and
+parameterises a figure but can never inject drawing code.
 
 An **anomaly investigation** is the only stateful tier. It opens on a given day,
 remains live in the log panel for 2–14 days accumulating tick entries, then resolves
@@ -383,6 +442,9 @@ Two consequences accepted rather than mitigated:
 | Time anchor | US Pacific, permanently | Travel must never skip or repeat a day in a 365-day count |
 | Repo visibility | Public | Required for Pages on a free user-site repo; content is ciphertext, and the account is separate from the owner's real-name presence |
 | Agency | None | Watch-only removes the possibility of failing your own mission |
+| Hero scale | Driven by the orbit, not instantaneous range | A once-a-day page cannot pulse; the swing is shown in telemetry instead |
+| Vehicle form | Lander plus cruise module, flown as a stack | It has to look like a rocket, and the thing that lands needs legs and a descent engine from the start |
+| Voices | One, the ship's computer, plus a reference register | Uncrewed. Nobody aboard to keep a second log |
 | Art direction | Vector realism, full colour | The Earth/Moon scale change is the primary signal |
 
 ## 16. Risks
