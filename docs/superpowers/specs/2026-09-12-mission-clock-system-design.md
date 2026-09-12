@@ -52,9 +52,15 @@ empty containers with schemas.
 
 ## 4. Time model
 
-**Day boundaries follow the viewer's local midnight, not UTC.** A personal clock
-should turn over when the viewer's day does. Launch and touchdown are both defined as
-local midnight on their respective dates.
+**Day boundaries follow midnight in US Pacific time, permanently, regardless of where the
+viewer is.** A personal clock should turn over when the viewer's day does, so UTC is wrong,
+but following the device is also wrong: flying east would skip a day and flying west would
+repeat one, corrupting a 365-day count. Anchoring to one zone forever fixes both. Launch and
+touchdown are both defined as Pacific midnight on their respective dates.
+
+Pacific time is derived from the IANA zone `America/Los_Angeles` via `Intl.DateTimeFormat`,
+which is present in every target browser and carries its own daylight-saving rules. No
+timezone library is needed.
 
 ```
 dayIndex = floor((localMidnightOf(now) - localMidnightOf(2026-08-31)) / 86400000)
@@ -70,9 +76,10 @@ Behaviour outside the window:
 | `0 <= missionT < 365` | Live mission. |
 | `missionT >= 365` | Monument mode (§12). |
 
-Daylight saving transitions shift a day boundary by an hour twice in the year. This is
-accepted and requires no special handling: the day index is computed from local
-midnights, so no day is skipped or duplicated.
+Daylight saving shifts a Pacific day boundary by an hour twice in the year. This needs no
+special handling: the index is computed from successive Pacific midnights, so no day is
+skipped or duplicated. A viewer in another timezone simply sees the day roll over at a local
+hour that is not midnight, which is correct behaviour rather than a bug.
 
 Clock skew and deliberate clock changes are not defended against. See §11.
 
@@ -344,8 +351,19 @@ light and dark, and with reduced motion, at a sample of dates across the year.
 
 ## 14. Deployment
 
-GitHub Pages via GitHub Actions on push to the default branch. The workflow runs the
-full-year sweep and refuses to deploy on failure. Static assets only.
+GitHub Pages via GitHub Actions on push to the default branch. The workflow runs the full-year
+sweep and refuses to deploy on failure. Static assets only. The repository URL is supplied by
+the owner.
+
+**Repository visibility: private for the duration of the mission, made public at touchdown**
+as part of the monument, when the content and the sealed content spec unlock anyway. Private
+during the year removes a class of problems entirely: nobody can diff two commits to infer
+structure, and commit sizes and timestamps leak nothing.
+
+Note that a private repository can still serve a public Pages site on paid plans; on a free
+plan the Pages site is private too. Confirm the plan before phase 7, since a private Pages
+site requires the viewer to be signed in, which is fine for an audience of one but changes
+how the page is opened on a phone.
 
 ## 15. Key decisions
 
@@ -357,6 +375,8 @@ full-year sweep and refuses to deploy on failure. Static assets only.
 | Time basis | Viewer's local midnight | A personal clock turns over when your day does |
 | Content storage | Pre-generated, per-day encrypted | Determinism plus a seal against accidental spoiling |
 | Setting | Present day, real world, real hardware | The reader should be able to imagine reading about this mission in a news article this year |
+| Time anchor | US Pacific, permanently | Travel must never skip or repeat a day in a 365-day count |
+| Repo visibility | Private now, public at touchdown | Removes inference from commit history during the mission |
 | Agency | None | Watch-only removes the possibility of failing your own mission |
 | Art direction | Vector realism, full colour | The Earth/Moon scale change is the primary signal |
 
@@ -383,5 +403,7 @@ the same engine.
 | Item | Owner | Blocking? |
 |---|---|---|
 | Propulsion profile and final phase schedule | Content spec | No. The renderer treats phases as data. |
+| GitHub repository URL | Project owner | Phase 7 only |
+| Whether the GitHub plan permits a public Pages site from a private repository | Project owner | Phase 7 only |
 
 All other decisions in this document are settled.
