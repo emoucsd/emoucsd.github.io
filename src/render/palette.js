@@ -1,0 +1,68 @@
+// Colour tokens of system spec §6.2, for code that computes colours (hull lighting, figures).
+// src/render/tokens.css declares the same tokens as CSS custom properties, and a test holds the
+// two files equal.
+
+export const PALETTE = {
+  void: '#000000',
+  bone: '#C8C3B8',
+  'bone-mid': '#8E8A81',
+  'bone-dim': '#6E6A63',
+  'bone-faint': '#33312D',
+  sunlight: '#FFE9C4',
+  alert: '#E08C5A',
+
+  'star-k3000': '#FFB978',
+  'star-k4500': '#FFD5A5',
+  'star-k5800': '#F4EFE8',
+  'star-k8000': '#E4E9F5',
+  'star-k12000': '#C9D7F5',
+  'star-dim': '#6A7080',
+
+  'earth-ocean-lit': '#1E5A7A',
+  'earth-ocean-mid': '#164A66',
+  'earth-ocean-deep': '#0C3048',
+  'earth-ocean-glint': '#B8D4E8',
+  'earth-land': '#6B7A58',
+  'earth-land-arid': '#8A7A5A',
+  'earth-land-ice': '#D8E2EA',
+  'earth-cloud': '#E8EEF2',
+  'earth-cloud-shade': '#9AA8B4',
+  'earth-limb': '#8EC9E8',
+  'earth-limb-deep': '#4A88B0',
+  'earth-night': '#060A12',
+  'earth-city': '#FFC878',
+
+  'moon-highland': '#C9BDAA',
+  'moon-highland-dim': '#8A8174',
+  'moon-mare': '#6E6A66',
+  'moon-mare-dim': '#3F3D3C',
+  'moon-rim': '#E0D6C8',
+  'moon-floor': '#5C5854',
+  'moon-shadow': '#161514',
+  'moon-earthshine': '#2A3340',
+  'moon-warm-term': '#D4B48A',
+  'moon-psr': '#0C0C0E',
+
+  'hull-lit': '#C9C2B4',
+  'hull-mid': '#8A8478',
+  'hull-shade': '#5A564C',
+  'mli-lit': '#C9A24A',
+  'mli-mid': '#8A6E2C',
+  'mli-shade': '#6A5420',
+  'mli-fold': '#E8D090',
+  radiator: '#E6E4DC',
+  'radiator-shade': '#8A8880',
+  'array-cell': '#1A2A3D',
+  'array-grid': '#2A4A68',
+  'array-glint': '#7A9AB8',
+  ceramic: '#D8D4CC',
+  'ceramic-shade': '#8A8680',
+  plume: '#7AB8E6',
+  'plume-core': '#D4EEFF',
+  'plume-kick': '#E8F0C8',
+  bay: '#14161A',
+  leg: '#4A4840',
+  'leg-joint': '#7A7468',
+};
+
+export const token = (name) => PALETTE[name];

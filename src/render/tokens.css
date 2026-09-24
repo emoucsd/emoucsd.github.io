@@ -1,0 +1,978 @@
+/* Colour, type, grid and chrome layout. Hex values on :root match palette.js
+   exactly (foundation test). Layout follows system spec §6.7 and §7.6. */
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("../../fonts/newsreader-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: optional;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("../../fonts/newsreader-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: optional;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("../../fonts/newsreader-400-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: optional;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("../../fonts/plex-mono-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: optional;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("../../fonts/plex-mono-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: optional;
+}
+
+:root {
+  /* ground and chrome */
+  --void:              #000000;
+  --bone:              #C8C3B8;   /* body text, log, card body        11.9 : 1 */
+  --bone-mid:          #8E8A81;   /* 11px labels                       6.1 : 1 */
+  --bone-dim:          #6E6A63;   /* labels 12px and larger only       3.8 : 1 */
+  --bone-faint:        #33312D;   /* rules and hairlines, never text   1.6 : 1 */
+  --sunlight:          #FFE9C4;   /* THE accent                       17.7 : 1 */
+  --alert:             #E08C5A;   /* hardware fault lines only         7.5 : 1 */
+
+  /* stars, by colour temperature */
+  --star-k3000:        #FFB978;
+  --star-k4500:        #FFD5A5;
+  --star-k5800:        #F4EFE8;
+  --star-k8000:        #E4E9F5;
+  --star-k12000:       #C9D7F5;
+  --star-dim:          #6A7080;
+
+  /* earth */
+  --earth-ocean-lit:   #1E5A7A;
+  --earth-ocean-mid:   #164A66;
+  --earth-ocean-deep:  #0C3048;
+  --earth-ocean-glint: #B8D4E8;
+  --earth-land:        #6B7A58;
+  --earth-land-arid:   #8A7A5A;
+  --earth-land-ice:    #D8E2EA;
+  --earth-cloud:       #E8EEF2;
+  --earth-cloud-shade: #9AA8B4;
+  --earth-limb:        #8EC9E8;
+  --earth-limb-deep:   #4A88B0;
+  --earth-night:       #060A12;
+  --earth-city:        #FFC878;
+
+  /* moon */
+  --moon-highland:     #C9BDAA;
+  --moon-highland-dim: #8A8174;
+  --moon-mare:         #6E6A66;
+  --moon-mare-dim:     #3F3D3C;
+  --moon-rim:          #E0D6C8;
+  --moon-floor:        #5C5854;
+  --moon-shadow:       #161514;
+  --moon-earthshine:   #2A3340;
+  --moon-warm-term:    #D4B48A;
+  --moon-psr:          #0C0C0E;
+
+  /* vehicle */
+  --hull-lit:          #C9C2B4;
+  --hull-mid:          #8A8478;
+  --hull-shade:        #5A564C;
+  --mli-lit:           #C9A24A;
+  --mli-mid:           #8A6E2C;
+  --mli-shade:         #6A5420;
+  --mli-fold:          #E8D090;
+  --radiator:          #E6E4DC;
+  --radiator-shade:    #8A8880;
+  --array-cell:        #1A2A3D;
+  --array-grid:        #2A4A68;
+  --array-glint:       #7A9AB8;
+  --ceramic:           #D8D4CC;
+  --ceramic-shade:     #8A8680;
+  --plume:             #7AB8E6;   /* physical, not an accent */
+  --plume-core:        #D4EEFF;
+  --plume-kick:        #E8F0C8;
+  --bay:               #14161A;
+  --leg:               #4A4840;
+  --leg-joint:         #7A7468;
+
+  /* loud-type lift; never assigned as a second --bone hex (foundation test). */
+  --bone-loud:         #EDE8DC;
+
+  --font-serif: "Newsreader", "Iowan Old Style", Palatino, Georgia, serif;
+  --font-mono:  "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --grid: 8px;
+  --inset: 16px;
+  /* Wider for reading (owner, 2026-09-14), never over the ship rail (§7.6): half the ship's
+     widest draw plus 32px of inset and clearance comes off half the width. See LOG_RAIL. */
+  --log-width: min(34rem, calc(50vw - 32px - max(3.15vw, 5.6vh)));
+  --log-top: 40%;
+  --ribbon-height: 92px;
+  --stage-height: calc(100vh - var(--ribbon-height));
+
+  /* One step up from the first build, by owner review: mono chrome +2px, serif +1px. */
+  --type-label-size: 13px;
+  --type-label-line: 1.3;
+  --type-label-tracking: 0.06em;
+  --type-value-size: 14px;
+  --type-value-line: 1.3;
+  --type-body-size: 17px;
+  --type-body-line: 1.62;
+  --type-body-tracking: 0.01em;
+  --type-card-size: 15px;
+  --type-card-line: 1.25;
+  --type-card-tracking: 0.08em;
+  --type-ency-size: 16px;
+  --type-ency-line: 1.70;
+  --type-ency-tracking: 0.02em;
+  --type-fault-size: 14px;
+  --type-fault-line: 1.3;
+
+  --scrim: linear-gradient(90deg,
+    rgba(0,0,0,0.00)  0%,
+    rgba(0,0,0,0.72) 18%,
+    rgba(0,0,0,0.88) 100%);
+  --scrim-strong: linear-gradient(90deg,
+    rgba(0,0,0,0.00)  0%,
+    rgba(0,0,0,0.82) 12%,
+    rgba(0,0,0,0.94) 100%);
+}
+
+html, body {
+  margin: 0;
+  background: var(--void);
+  color: var(--bone);
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: var(--type-body-line);
+  min-height: 100%;
+  color-scheme: dark;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.page {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: var(--stage-height) var(--ribbon-height);
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "stage"
+    "ribbon";
+  background: var(--void);
+  color: var(--bone);
+}
+
+.stage {
+  grid-area: stage;
+  position: relative;
+  width: 100%;
+  height: var(--stage-height);
+  background: var(--void);
+  overflow: hidden;
+}
+
+.stage canvas#fx,
+.stage canvas#fx-front,
+.stage svg#scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.stage canvas#fx { z-index: 0; }
+/* Vehicle particles in front of the scene, beneath the HUD (later in the DOM at the same z). */
+.stage canvas#fx-front {
+  z-index: 2;
+  pointer-events: none;
+}
+.stage svg#scene {
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hud {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.ribbon {
+  grid-area: ribbon;
+  position: relative;
+  height: var(--ribbon-height);
+  background: var(--void);
+  border-top: 1px solid var(--bone-faint);
+  pointer-events: auto;
+  z-index: 3;
+}
+
+/* Type scale */
+
+.label, .type-label {
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  font-weight: 500;
+  line-height: var(--type-label-line);
+  letter-spacing: var(--type-label-tracking);
+  font-variant-numeric: tabular-nums;
+  color: var(--bone-mid);
+  text-transform: lowercase;
+}
+
+.value, .type-value {
+  font-family: var(--font-mono);
+  font-size: var(--type-value-size);
+  font-weight: 400;
+  line-height: var(--type-value-line);
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--sunlight);
+}
+
+.body, .type-body {
+  font-family: var(--font-serif);
+  font-size: var(--type-body-size);
+  font-weight: 400;
+  line-height: var(--type-body-line);
+  letter-spacing: var(--type-body-tracking);
+  color: var(--bone);
+}
+
+.card-title, .type-card-title {
+  font-family: var(--font-mono);
+  font-size: var(--type-card-size);
+  font-weight: 500;
+  line-height: var(--type-card-line);
+  letter-spacing: var(--type-card-tracking);
+  font-variant: small-caps;
+  font-variant-numeric: tabular-nums;
+  color: var(--bone);
+}
+
+.ency, .type-ency {
+  font-family: var(--font-serif);
+  font-size: var(--type-ency-size);
+  font-weight: 400;
+  line-height: var(--type-ency-line);
+  letter-spacing: var(--type-ency-tracking);
+  color: var(--bone);
+}
+
+.fault, .type-fault {
+  font-family: var(--font-mono);
+  font-size: var(--type-fault-size);
+  font-weight: 400;
+  line-height: var(--type-fault-line);
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--alert);
+}
+
+/* Inline marks for declared form breaks (owner, 2026-09-14; src/render/marks.js). Same colour
+   as the text around them, always. */
+em {
+  font-style: italic;
+}
+
+strong {
+  font-weight: 600;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  font-weight: 400;
+  font-variant: normal;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  /* A readout moves to the next line whole; it breaks only if longer than a line. */
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+s {
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1px;
+  text-decoration-color: currentColor;
+}
+
+/* Paragraphs inside log, report and card text. */
+.log-body > p,
+.log-section-body > p,
+.card-body > p {
+  margin: 0;
+}
+
+.log-body > p + p,
+.log-section-body > p + p,
+.card-body > p + p {
+  margin-top: 8px;
+}
+
+/* Telemetry: corners, no panel, no border, no background. */
+
+.telemetry {
+  position: absolute;
+  top: var(--inset);
+  display: grid;
+  gap: 8px;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.telemetry-l { left: var(--inset); text-align: left; }
+.telemetry-r { right: var(--inset); text-align: right; }
+
+.telemetry-row {
+  display: grid;
+  gap: 0;
+}
+
+.telemetry-strip {
+  display: none;
+  grid-area: tele;
+  padding: 8px var(--inset);
+  gap: 8px 20px;
+  flex-wrap: wrap;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+  border-top: 1px solid var(--bone-faint);
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.telemetry-strip .telemetry-row {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: baseline;
+}
+
+/* Log column: lower right, below the Moon's quarter. Top at 40% of the stage so
+   tableau discs stay clear, the same on every day. One scroll region inside it
+   (owner, 2026-09-14); no visible scrollbar. */
+
+.log-column {
+  position: absolute;
+  top: var(--log-top);
+  right: var(--inset);
+  bottom: 0;
+  width: var(--log-width);
+  box-sizing: border-box;
+  padding: 16px 16px 16px 28px;
+  background: var(--scrim);
+  outline: none;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  scrollbar-width: none;
+  color: var(--bone);
+  z-index: 3;
+  mask-image: linear-gradient(to bottom,
+    transparent 0,
+    #000 12px,
+    #000 100%);
+  -webkit-mask-image: linear-gradient(to bottom,
+    transparent 0,
+    #000 12px,
+    #000 100%);
+}
+
+.log-column::-webkit-scrollbar { width: 0; height: 0; }
+
+/* Overflow fades at the foot of whatever holds the text; the cue sits beneath it, clear. */
+.log-column.log-clipped > .log-main,
+.log-column.log-ency-open > .log-ency {
+  mask-image: linear-gradient(to bottom,
+    #000 0,
+    #000 calc(100% - 32px),
+    transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom,
+    #000 0,
+    #000 calc(100% - 32px),
+    transparent 100%);
+}
+
+.log-main {
+  /* Border box, so a settled fold (max-height, see chrome.js settleFold) includes the padding. */
+  box-sizing: border-box;
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.log-main:focus-visible,
+.log-ency:focus-visible {
+  outline: 1px solid var(--bone-faint);
+  outline-offset: 0;
+}
+
+/* Room past the last line so it scrolls clear of the fade. */
+.log-column.log-clipped > .log-main,
+.log-column.log-ency-open > .log-ency {
+  padding-bottom: 24px;
+}
+
+/* The cue at the fold (owner, 2026-09-14): one label line naming what lies below. No colour,
+   no motion. Once the reader reaches the end it goes, keeping its line so nothing jumps. */
+.log-cue {
+  flex: 0 0 auto;
+  /* Always at the foot of the column, even when a settled fold ends the region higher. */
+  margin: auto 0 0;
+  padding-top: 4px;
+  color: var(--bone-mid);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.log-cue.is-done {
+  visibility: hidden;
+}
+
+.log-main::-webkit-scrollbar,
+.log-ency::-webkit-scrollbar { width: 0; height: 0; }
+
+.log-kicker {
+  margin: 0 0 4px;
+}
+
+.log-title {
+  font-family: var(--font-serif);
+  font-size: var(--type-body-size);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: var(--type-body-tracking);
+  color: var(--bone);
+  margin: 0 0 4px;
+}
+
+.log-body, .log-section-body {
+  font-family: var(--font-serif);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  letter-spacing: var(--type-body-tracking);
+  color: var(--bone);
+  margin: 0 0 16px;
+}
+
+.log-section-title {
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: lowercase;
+  color: var(--bone-mid);
+  margin: 16px 0 8px;
+}
+
+.log-figure {
+  margin: 8px 0 16px;
+  min-height: 0;
+}
+
+/* Cards sit above the entry: a rule, label line, title, body, then a rule before the
+   day title. One look for every card; the label's words carry the rating. */
+.log-cards {
+  margin: 4px 0 16px;
+  border-bottom: 1px solid var(--bone-faint);
+}
+.log-cards[hidden] { display: none !important; }
+
+.log-card {
+  padding: 12px 0 16px;
+  border-top: 1px solid var(--bone-faint);
+}
+
+.card-label {
+  margin: 0 0 6px;
+}
+
+.log-card .card-title {
+  margin: 0 0 8px;
+}
+
+.card-body {
+  margin: 0;
+}
+
+/* Reference note (§6.7.3): one label-style line beneath the log. It breathes between
+   --bone-dim and --bone until opened; no movement, no badge, no accent. */
+.log-ref {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 12px 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  text-align: left;
+  text-transform: none;
+  color: var(--bone);
+  cursor: pointer;
+}
+
+.log-ref.is-breathing {
+  animation: ref-breathe 4s ease-in-out infinite;
+}
+
+@keyframes ref-breathe {
+  0%, 100% { color: var(--bone-dim); }
+  50% { color: var(--bone); }
+}
+
+.log-ref-dot {
+  display: inline-block;
+  margin-right: 0.6em;
+}
+
+.log-ref:focus-visible,
+.log-ency-close:focus-visible {
+  outline: 1px solid var(--bone);
+  outline-offset: 2px;
+}
+
+.log-ref {
+  flex: 0 0 auto;
+}
+
+/* An opened entry replaces the log in the same column and scrolls inside it. */
+.log-ency {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.reading-ency {
+  padding-bottom: 32px;
+}
+
+.log-ency-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 44px;
+  margin: 0;
+}
+
+.log-ency-kicker {
+  margin: 0;
+}
+
+.log-ency-close {
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0 -4px 0 0;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  color: var(--bone);
+  text-align: right;
+  cursor: pointer;
+}
+
+.log-ency-close:hover {
+  color: var(--bone-loud);
+}
+
+.log-ency-title {
+  font-family: var(--font-serif);
+  font-size: var(--type-body-size);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: var(--type-body-tracking);
+  color: var(--bone);
+  margin: 0 0 12px;
+}
+
+.log-ency-body .ency {
+  margin: 0 0 12px;
+}
+
+.log-ency-source {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--type-ency-size);
+  line-height: var(--type-ency-line);
+  letter-spacing: var(--type-ency-tracking);
+  color: var(--bone);
+  margin: 16px 0 0;
+}
+
+.log-anomaly {
+  margin: 0 0 16px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--alert);
+}
+
+.brief-marker {
+  position: absolute;
+  top: auto;
+  left: var(--inset);
+  bottom: var(--inset);
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--bone);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: lowercase;
+  pointer-events: auto;
+  cursor: default;
+}
+
+.brief-marker:hover,
+.brief-marker:focus-visible {
+  color: var(--bone-loud);
+}
+
+.settings-toggle {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--bone-mid);
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 8;
+}
+
+.settings-toggle:hover,
+.settings-toggle:focus-visible {
+  color: var(--bone);
+}
+
+.settings-panel {
+  position: absolute;
+  right: var(--inset);
+  bottom: calc(var(--ribbon-height) + 8px);
+  min-width: 220px;
+  padding: 16px;
+  background: var(--void);
+  border: 1px solid var(--bone-faint);
+  color: var(--bone);
+  z-index: 6;
+  pointer-events: auto;
+}
+
+.settings-panel[hidden],
+.log-column [hidden],
+.reading-view[hidden],
+.telemetry-row[hidden],
+.log-card[hidden],
+.log-anomaly[hidden],
+.log-figure[hidden],
+.reading-sheet [hidden] {
+  display: none !important;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: lowercase;
+  color: var(--bone);
+}
+
+.settings-row input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--sunlight);
+}
+
+.reading-view {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.72);
+  pointer-events: auto;
+}
+
+.reading-sheet {
+  margin: 8vh auto;
+  width: min(40rem, calc(100% - 32px));
+  max-height: 84vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 24px 28px 48px;
+  color: var(--bone);
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 1.62;
+  background: var(--void);
+  /* The sheet's lower edge fades rather than cutting a line. */
+  mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 32px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 32px), transparent 100%);
+}
+
+.term {
+  border-bottom: 1px dotted var(--bone-dim);
+  cursor: help;
+}
+
+.term-tip {
+  position: absolute;
+  max-width: 22rem;
+  padding: 8px 12px;
+  background: var(--void);
+  border: 1px solid var(--bone-faint);
+  color: var(--bone);
+  font-family: var(--font-serif);
+  font-size: var(--type-ency-size);
+  line-height: var(--type-ency-line);
+  pointer-events: none;
+  z-index: 8;
+}
+
+:focus-visible {
+  outline: 1px solid var(--sunlight);
+  outline-offset: 2px;
+}
+
+/* Body is 17px, 18px from 1280px (owner, 2026-09-14). Loud type lifts to 19px. */
+@media (min-width: 1280px) {
+  :root { --type-body-size: 18px; }
+}
+
+/* §7.6 1100–1439: up to 30 rem, both telemetry, phase may drop in JS. */
+@media (max-width: 1439px) {
+  :root { --log-width: min(30rem, calc(50vw - 32px - max(2.8vw, 5vh))); }
+}
+
+/* §7.6 800–1099: up to 26 rem, stronger scrim, orrery dropped, telemetry left only.
+   Keep the 40% top so the Moon's quarter stays clear. */
+@media (max-width: 1099px) {
+  :root { --log-width: min(26rem, calc(50vw - 32px - max(2.45vw, 4.4vh))); }
+  .telemetry-r { display: none; }
+  .log-column {
+    top: var(--log-top);
+    background: var(--scrim-strong);
+  }
+  .ribbon-orrery { display: none; }
+}
+
+/* §7.6 below 800: log beneath the stage, no scrim, 16px padding. */
+@media (max-width: 799px) {
+  :root {
+    --ribbon-height: 64px;
+    --stage-height: min(58vh, 520px);
+    --log-width: 100%;
+  }
+
+  .page {
+    grid-template-rows: var(--stage-height) auto var(--ribbon-height) auto;
+    grid-template-areas:
+      "stage"
+      "log"
+      "ribbon"
+      "tele";
+  }
+
+  .log-column,
+  .log-column.log-stacked {
+    position: relative;
+    grid-area: log;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    width: auto;
+    max-width: none;
+    max-height: none;
+    justify-self: stretch;
+    padding: 4px 16px 16px;
+    background: none;
+    mask-image: none;
+    -webkit-mask-image: none;
+    overflow: visible;
+  }
+
+  /* Phones (owner, 2026-09-14: "I like the page to scroll on phone"): the document scrolls.
+     Stage, then the whole log in order (date, card, report, figure, note line), then the
+     ribbon and the telemetry strip. The log is not a region of its own, so there is no fade
+     and no cue: the screen edge is the fold, and a page that runs off it is the ordinary sign
+     that it scrolls. Tight spacing above the report so the first screen reaches it. */
+  .log-main {
+    overflow: visible;
+    padding-bottom: 0;
+  }
+  .log-cue { display: none; }
+  .log-kicker { margin-bottom: 0; }
+  .log-cards { margin-top: 0; }
+  .log-card { padding-top: 6px; }
+  .card-label { margin-bottom: 2px; }
+  .log-card .card-title { margin-bottom: 4px; }
+  .log-ref { padding: 8px 0; }
+
+  .telemetry-l, .telemetry-r { display: none; }
+  .telemetry-strip { display: flex; }
+  .brief-marker { position: relative; bottom: auto; left: auto; margin: 8px var(--inset); }
+}
+
+/* §7.6 360–599 */
+@media (max-width: 599px) {
+  :root {
+    --ribbon-height: 56px;
+    --stage-height: min(52vh, 420px);
+    --type-body-size: 17px;
+  }
+
+  .stage { min-height: 280px; }
+  .telemetry-strip { flex-wrap: wrap; }
+}
+
+/* Viewport height rules. */
+@media (max-height: 639px) {
+  :root { --ribbon-height: 64px; }
+}
+
+@media (max-height: 479px) {
+  :root { --ribbon-height: 48px; }
+
+  .page {
+    grid-template-rows: 60% 40% var(--ribbon-height);
+    grid-template-areas:
+      "stage"
+      "log"
+      "ribbon";
+  }
+
+  .log-column {
+    position: relative;
+    grid-area: log;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    width: auto;
+    background: none;
+    mask-image: none;
+    -webkit-mask-image: none;
+    overflow: visible;
+  }
+}
+
+/* Portrait phones: stage, log, ribbon. Already the stacked grid. */
+
+@media (orientation: landscape) and (max-width: 799px) {
+  :root { --ribbon-height: 48px; }
+
+  .page {
+    grid-template-columns: 58% 42%;
+    grid-template-rows: 1fr var(--ribbon-height);
+    grid-template-areas:
+      "stage log"
+      "ribbon ribbon";
+  }
+
+  .stage { height: auto; min-height: 0; }
+  .log-column {
+    position: relative;
+    height: auto;
+    overflow: visible;
+  }
+}
+
+/* Gain dim: chrome text is lifted, never lowered. Scene albedo is a draw-time
+   concern; we do not filter the SVG. */
+[data-gain="dim"] .label,
+[data-gain="dim"] .type-label,
+[data-gain="dim"] .log-kicker,
+[data-gain="dim"] .log-section-title,
+[data-gain="dim"] .settings-toggle,
+[data-gain="dim"] .brief-marker {
+  color: var(--bone);
+}
+
+[data-gain="dim"] .value,
+[data-gain="dim"] .type-value {
+  color: var(--sunlight);
+}
+
+/* Loud type: raise --bone via a second token so the hex on :root stays unique. */
+[data-type="loud"] {
+  --bone: var(--bone-loud);
+  --type-body-size: 19px;
+}
+
+/* Reduced motion: lose animation, never information. */
+[data-motion="off"] *,
+[data-motion="off"] *::before,
+[data-motion="off"] *::after {
+  animation-duration: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+}
+
+/* The reference note holds steady at --bone; the script adds the leading dot. */
+[data-motion="off"] .log-ref.is-breathing,
+.log-ref.is-steady {
+  animation: none;
+  color: var(--bone);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+  }
+
+  .log-ref.is-breathing {
+    animation: none;
+    color: var(--bone);
+  }
+}

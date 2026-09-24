@@ -1,0 +1,488 @@
+/* Archive view (§7.3a). Same void as the stage; no modal chrome, no card
+   boxes, no shadows. Type and colour come only from tokens.css. */
+
+.archive-marker {
+  position: absolute;
+  left: calc(var(--inset) + 52px);
+  bottom: var(--inset);
+  top: auto;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--bone);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: lowercase;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 40;
+}
+
+.archive-marker:hover,
+.archive-marker:focus-visible,
+.archive-marker[aria-expanded="true"] {
+  color: var(--bone-loud);
+}
+
+html.archive-open .archive-marker,
+.archive-open .archive-marker {
+  position: fixed;
+  left: auto;
+  right: var(--inset);
+  top: var(--inset);
+  bottom: auto;
+}
+
+.archive {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  background: var(--void);
+  color: var(--bone);
+  pointer-events: auto;
+  overflow: hidden;
+  height: 100%;
+}
+
+.archive[hidden] {
+  display: none !important;
+}
+
+html.archive-open,
+html.archive-open body {
+  overflow: hidden;
+}
+
+.archive-nav {
+  box-sizing: border-box;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 24px var(--inset) 24px;
+  overflow: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bone-faint) transparent;
+}
+
+.archive-nav-kicker {
+  margin: 24px 0 8px;
+}
+
+.archive-nav-kicker:first-child {
+  margin-top: 0;
+}
+
+.archive-phases {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.archive-phase {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 10px 0;
+  min-height: 32px;
+  color: var(--bone-mid);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  font-weight: 500;
+  line-height: var(--type-label-line);
+  letter-spacing: var(--type-label-tracking);
+  cursor: pointer;
+}
+
+.archive-phase.is-active {
+  color: var(--bone);
+}
+
+.archive-phase:hover,
+.archive-phase:focus-visible {
+  color: var(--bone);
+}
+
+.archive-day-index {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(2.6rem, 1fr));
+  align-content: start;
+  align-items: start;
+  gap: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bone-faint) transparent;
+}
+
+.archive-day-jump {
+  background: none;
+  border: 0;
+  margin: 0;
+  padding: 6px 0;
+  color: var(--bone-mid);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  font-weight: 500;
+  line-height: var(--type-label-line);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+  cursor: pointer;
+}
+
+.archive-day-jump.is-today {
+  color: var(--sunlight);
+}
+
+.archive-day-jump:hover,
+.archive-day-jump:focus-visible {
+  color: var(--bone);
+}
+
+.archive-day-jump.is-today:hover,
+.archive-day-jump.is-today:focus-visible {
+  color: var(--sunlight);
+}
+
+.archive-main {
+  box-sizing: border-box;
+  min-height: 0;
+  overflow: auto;
+  padding: 32px 24px 96px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bone-faint) transparent;
+  scroll-behavior: auto;
+}
+
+.archive-measure {
+  box-sizing: border-box;
+  max-width: 62ch;
+  margin: 0 auto;
+}
+
+.archive-spacer {
+  width: 100%;
+  pointer-events: none;
+}
+
+.archive-day {
+  box-sizing: border-box;
+  padding: 28px 0 28px 16px;
+  border-bottom: 1px solid var(--bone-faint);
+  border-left: 1px solid transparent;
+  scroll-margin-top: 24px;
+}
+
+.archive-day.is-today {
+  border-left-color: var(--sunlight);
+}
+
+.archive-day-head {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  column-gap: 16px;
+  align-items: baseline;
+  margin: 0 0 8px;
+}
+
+.archive-day-date,
+.archive-day-num,
+.archive-day-phase {
+  margin: 0;
+}
+
+.archive-day-num {
+  font-family: var(--font-mono);
+  font-size: var(--type-value-size);
+  font-weight: 400;
+  line-height: var(--type-value-line);
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--bone-mid);
+}
+
+.archive-day.is-today .archive-day-num {
+  color: var(--sunlight);
+}
+
+.archive-view {
+  justify-self: end;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--bone-mid);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: lowercase;
+  cursor: pointer;
+}
+
+.archive-view:hover,
+.archive-view:focus-visible {
+  color: var(--bone-mid);
+}
+
+.archive-day-title {
+  font-family: var(--font-serif);
+  font-size: var(--type-body-size);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: var(--type-body-tracking);
+  color: var(--bone);
+  margin: 8px 0 12px;
+}
+
+.archive-day-body,
+.archive-sec-body,
+.archive-card-body,
+.archive-ency-body {
+  font-family: var(--font-serif);
+  font-size: var(--type-ency-size);
+  font-weight: 400;
+  line-height: var(--type-ency-line);
+  letter-spacing: var(--type-ency-tracking);
+  color: var(--bone);
+  margin: 0 0 16px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.archive-sec {
+  margin: 0;
+}
+
+.archive-sec-title {
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  font-weight: 500;
+  letter-spacing: var(--type-label-tracking);
+  text-transform: lowercase;
+  color: var(--bone-mid);
+  margin: 16px 0 8px;
+}
+
+.archive-cards,
+.archive-ticks,
+.archive-ency-list {
+  margin: 8px 0 0;
+}
+
+.archive-card {
+  padding: 12px 0;
+  border-top: 1px solid var(--bone-faint);
+}
+
+.archive-card-title {
+  font-family: var(--font-mono);
+  font-size: var(--type-card-size);
+  font-weight: 500;
+  line-height: var(--type-card-line);
+  letter-spacing: var(--type-card-tracking);
+  font-variant: small-caps;
+  color: var(--bone);
+  margin: 0 0 6px;
+}
+
+.archive-tick {
+  margin: 0 0 8px;
+}
+
+.archive-ency {
+  margin: 16px 0 0;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--bone-faint);
+}
+
+.archive-ency-title {
+  font-family: var(--font-serif);
+  font-size: var(--type-body-size);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: var(--type-body-tracking);
+  color: var(--bone);
+  margin: 0 0 8px;
+}
+
+.archive-ency-source {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--type-ency-size);
+  line-height: var(--type-ency-line);
+  letter-spacing: var(--type-ency-tracking);
+  color: var(--bone);
+  margin: 0 0 8px;
+}
+
+.archive-card-label {
+  margin: 0 0 6px;
+}
+
+.archive-cards {
+  border-bottom: 1px solid var(--bone-faint);
+}
+
+.archive-cards[hidden] {
+  display: none;
+}
+
+.archive-figure {
+  margin: 16px 0 8px;
+}
+
+.archive-figure svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+[data-gain="dim"] .archive-marker,
+[data-gain="dim"] .archive-phase,
+[data-gain="dim"] .archive-day-jump,
+[data-gain="dim"] .archive-view,
+[data-gain="dim"] .archive-nav-kicker,
+[data-gain="dim"] .archive-sec-title,
+[data-gain="dim"] .archive-day-date,
+[data-gain="dim"] .archive-day-phase {
+  color: var(--bone);
+}
+
+[data-gain="dim"] .archive-day.is-today .archive-day-num,
+[data-gain="dim"] .archive-day-jump.is-today {
+  color: var(--sunlight);
+}
+
+[data-motion="off"] .archive-main {
+  scroll-behavior: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .archive-main {
+    scroll-behavior: auto;
+  }
+}
+
+@media (max-width: 1439px) {
+  .archive {
+    grid-template-columns: 14rem minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1099px) {
+  .archive {
+    grid-template-columns: 12rem minmax(0, 1fr);
+  }
+  .archive-main {
+    padding: 24px 16px 80px;
+  }
+}
+
+@media (max-width: 799px) {
+  .archive {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100%;
+  }
+
+  .archive-marker {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    margin: 8px var(--inset);
+  }
+
+  html.archive-open .archive-marker {
+    position: fixed;
+    left: auto;
+    right: var(--inset);
+    top: 4px;
+    bottom: auto;
+    margin: 0;
+  }
+
+  .archive-nav {
+    display: block;
+    padding: 48px var(--inset) 8px;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .archive-phases {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 16px;
+  }
+
+  .archive-phase {
+    width: auto;
+    min-height: 0;
+    padding: 8px 0;
+  }
+
+  .archive-day-index {
+    display: flex;
+    flex-wrap: nowrap;
+    flex: none;
+    overflow-x: auto;
+    gap: 4px;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bone-faint) transparent;
+  }
+
+  .archive-day-jump {
+    flex: 0 0 auto;
+    padding: 8px 6px;
+  }
+
+  .archive-main {
+    min-height: 0;
+    padding: 8px var(--inset) 80px;
+  }
+
+  .archive-day-head {
+    grid-template-columns: auto auto 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .archive-view {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 599px) {
+  .archive-day-body,
+  .archive-sec-body,
+  .archive-card-body,
+  .archive-ency-body {
+    font-size: var(--type-body-size);
+    line-height: var(--type-body-line);
+  }
+}
+
+/* Inline-mark paragraphs (src/render/marks.js); em, strong, code and s are styled in tokens.css. */
+.archive-day-body > p,
+.archive-sec-body > p,
+.archive-card-body > p {
+  margin: 0;
+  white-space: normal;
+}
+
+.archive-day-body > p + p,
+.archive-sec-body > p + p,
+.archive-card-body > p + p {
+  margin-top: 12px;
+}

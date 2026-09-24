@@ -1,0 +1,36 @@
+# Published as .github/workflows/pages.yml by tools/seal/deploy.mjs. Not active on the
+# development branch. Runs the sealed full-year sweep and deploys only if it passes (spec §14).
+# Needs the repository's Pages source set to GitHub Actions (build_type "workflow"); under the
+# legacy branch source GitHub would serve main directly, without this gate.
+name: pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: read
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+      - name: Sealed full-year sweep
+        run: node tools/seal/check_sealed.mjs --archive content/sealed/monument.bin
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v5

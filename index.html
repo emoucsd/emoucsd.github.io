@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mission Clock</title>
+  <link rel="stylesheet" href="src/render/tokens.css">
+  <link rel="stylesheet" href="src/render/archive.css">
+  <link rel="preload" href="fonts/newsreader-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/plex-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="modulepreload" href="src/app/main.js">
+  <link rel="modulepreload" href="src/app/scene.js">
+  <link rel="modulepreload" href="src/physics.js">
+  <link rel="modulepreload" href="src/render/frame.js">
+  <link rel="modulepreload" href="src/render/earth.js">
+  <link rel="modulepreload" href="src/render/moon.js">
+  <link rel="modulepreload" href="src/render/moon-catalog.js">
+  <link rel="modulepreload" href="src/render/vehicle.js">
+  <link rel="modulepreload" href="src/render/fx.js">
+  <link rel="modulepreload" href="src/render/chrome.js">
+  <style>
+    html, body {
+      margin: 0;
+      background: var(--void, #000000);
+      color: var(--bone, #C8C3B8);
+      font-family: var(--font-serif, "Newsreader", "Iowan Old Style", Palatino, Georgia, serif);
+      overflow-x: hidden;
+    }
+    .stage {
+      position: relative;
+      width: 100vw;
+      height: calc(100vh - 92px);
+      overflow: hidden;
+      background: var(--void, #000000);
+    }
+    #fx, #scene {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      pointer-events: none;
+    }
+    .hud {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .ribbon {
+      height: 92px;
+      width: 100%;
+      box-sizing: border-box;
+      border-top: 1px solid var(--bone-faint, #33312D);
+      background: var(--void, #000000);
+    }
+    @media (max-width: 799px) {
+      .stage { height: min(58vh, 520px); }
+    }
+    @media (max-width: 599px) {
+      .stage { height: min(52vh, 420px); min-height: 280px; }
+      .ribbon { height: 56px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <canvas id="fx"></canvas>
+    <canvas id="fx-front"></canvas>
+    <svg id="scene" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs></defs>
+      <g id="earth"></g>
+      <g id="moon"></g>
+      <g id="anomaly"></g>
+      <g id="vehicle"></g>
+    </svg>
+    <div class="hud"></div>
+  </div>
+  <div class="ribbon"></div>
+  <script type="module" src="src/app/main.js"></script>
+</body>
+</html>

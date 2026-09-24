@@ -11,8 +11,9 @@ across exactly 365 real days.
 
 The page derives its entire state from the current time. There is no backend, no database, no
 build step and no runtime dependencies. Every day is generated once, encrypted under a key
-derived from its own date, and committed. The page can decrypt any day that has already
-arrived and cannot decrypt one that has not.
+derived from its own date, and committed. The page opens any day that has already arrived
+and does not open one that has not. The keys are derivable by anyone who goes looking, so the
+seal stops accidents rather than determined readers (system spec §11).
 
 You watch. You cannot steer it, choose anything, or fail. You can scrub backwards and replay
 the mission from launch to the present moment, and the present moment is a wall the control
