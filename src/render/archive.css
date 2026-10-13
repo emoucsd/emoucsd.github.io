@@ -246,6 +246,7 @@ html.archive-open body {
 }
 
 .archive-day-body,
+.archive-sevline,
 .archive-sec-body,
 .archive-card-body,
 .archive-ency-body {
@@ -465,6 +466,7 @@ html.archive-open body {
 
 @media (max-width: 599px) {
   .archive-day-body,
+  .archive-sevline,
   .archive-sec-body,
   .archive-card-body,
   .archive-ency-body {

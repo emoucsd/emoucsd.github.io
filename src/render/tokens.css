@@ -473,7 +473,7 @@ s {
   margin: 0 0 4px;
 }
 
-.log-body, .log-section-body {
+.log-body, .log-section-body, .log-sevline {
   font-family: var(--font-serif);
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);

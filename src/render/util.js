@@ -4,6 +4,16 @@ export const SVG_NS = 'http://www.w3.org/2000/svg';
 export const RAD = Math.PI / 180;
 export const DEG = 180 / Math.PI;
 
+// Section order: a record may name its own (log.order); otherwise the default below.
+export const REPORT_SECTIONS = ['event', 'action', 'checks', 'assessment'];
+export function reportOrder(log) {
+  const o = log && log.order;
+  if (Array.isArray(o) && o.length === REPORT_SECTIONS.length && REPORT_SECTIONS.every((n) => o.includes(n))) {
+    return o.slice();
+  }
+  return REPORT_SECTIONS.slice();
+}
+
 export const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
 export const lerp = (a, b, u) => a + (b - a) * u;
 export function smoothstep(x) {

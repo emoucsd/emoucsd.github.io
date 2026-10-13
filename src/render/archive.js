@@ -9,12 +9,13 @@ import { state, PHASES } from '../physics.js';
 import { missionTAtPacificClock, pacificStamp } from '../clock.js';
 import { renderFigure } from './figures.js';
 import { renderMarks } from './marks.js';
+import { REPORT_SECTIONS, reportOrder } from './util.js';
 
 export const MAX_DAY_BLOCKS = 30;
 export const ARCHIVE_HOUR = 18;
 export const ROW_ESTIMATE = 360;
 
-const SECTION_NAMES = ['event', 'action', 'checks', 'assessment'];
+const SECTION_NAMES = REPORT_SECTIONS;
 
 export function clampToday(today) {
   const n = Math.floor(Number(today));
@@ -361,6 +362,18 @@ export function createArchive(root, opts = {}) {
     const log = rec && rec.log;
     setText(slot.titleEl, log && log.title);
     const sections = eventSections(rec);
+    // Optional severity line and section order from the record.
+    const severity = sections && log && typeof log.severity === 'string' ? log.severity : '';
+    slot.sevEl.hidden = !severity;
+    setText(slot.sevEl, severity);
+    if (sections) {
+      const order = reportOrder(log);
+      if (order.join() !== slot.secOrder) {
+        for (const name of order) slot.article.appendChild(slot.secs[name].wrap);
+        for (const after of [slot.ticks, slot.ency, slot.fig]) slot.article.appendChild(after);
+        slot.secOrder = order.join();
+      }
+    }
     if (sections) {
       slot.bodyEl.hidden = true;
       clear(slot.bodyEl);
@@ -395,6 +408,7 @@ export function createArchive(root, opts = {}) {
     const cards = h('div', { className: 'archive-cards', hidden: true }, article);
     const titleEl = h('h2', { className: 'archive-day-title' }, article);
     const bodyEl = h('div', { className: 'archive-day-body' }, article);
+    const sevEl = h('p', { className: 'archive-sevline', hidden: true }, article);
     const secs = {};
     for (const name of SECTION_NAMES) {
       const wrap = h('section', { className: 'archive-sec', hidden: true }, article);
@@ -411,7 +425,10 @@ export function createArchive(root, opts = {}) {
       onSelectDay(day);
       close();
     });
-    return { article, dateEl, numEl, phaseEl, viewBtn, titleEl, bodyEl, secs, cards, ticks, ency, fig };
+    return {
+      article, dateEl, numEl, phaseEl, viewBtn, titleEl, bodyEl, sevEl, secs, cards, ticks, ency, fig,
+      secOrder: SECTION_NAMES.join(),
+    };
   }
 
   for (let i = 0; i < MAX_DAY_BLOCKS; i++) pool.push(createBlock());

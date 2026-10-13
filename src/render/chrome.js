@@ -16,6 +16,7 @@
 import { heroLayout } from './scale.js';
 import { sliceTransform } from './project.js';
 import { renderMarks } from './marks.js';
+import { REPORT_SECTIONS, reportOrder } from './util.js';
 
 const THIN = '\u202f';
 const CARD_POOL = 8;
@@ -502,16 +503,19 @@ export function createChrome(root, opts = {}) {
 
   const title = h('h1', { className: 'log-title' }, logMain);
   const body = h('div', { className: 'log-body body' }, logMain);
+  // Optional severity line above the sections.
+  const severityEl = h('p', { className: 'log-sevline', hidden: true }, logMain);
 
   // The report (owner, 2026-09-14): no expanding controls. Every section renders open, in order,
-  // and the reader reaches each one by scrolling.
-  const REPORT = ['event', 'action', 'checks', 'assessment'];
+  // and the reader reaches each one by scrolling. A record may set the order.
+  const REPORT = REPORT_SECTIONS;
   const reportSecs = REPORT.map((name) => {
     const wrap = h('section', { className: 'log-section', hidden: true }, logMain);
     const head = h('h2', { className: 'log-section-title', text: name }, wrap);
     const text = h('div', { className: 'log-section-body' }, wrap);
     return { name, wrap, head, text };
   });
+  let secOrder = REPORT.join();
 
   const figureSlot = h('div', { className: 'log-figure', hidden: true }, logMain);
 
@@ -1009,6 +1013,7 @@ export function createChrome(root, opts = {}) {
       lines.map((l) => l.value).join(';'),
       rec && rec.day,
       rec && rec.log && rec.log.title,
+      rec && rec.log && Array.isArray(rec.log.order) ? rec.log.order.join(',') : '',
       archive ? 'a' : 'l',
     ].join('|');
     paintLines(lines, bp);
@@ -1048,6 +1053,16 @@ export function createChrome(root, opts = {}) {
 
     body.hidden = !!sections;
     if (!sections) fillTerms(body, log && log.body, terms);
+    const severity = sections && log && typeof log.severity === 'string' ? log.severity : '';
+    severityEl.hidden = !severity;
+    setText(severityEl, severity);
+    if (sections) {
+      const order = reportOrder(log);
+      if (order.join() !== secOrder) {
+        for (const name of order) logMain.insertBefore(reportSecs[REPORT.indexOf(name)].wrap, figureSlot);
+        secOrder = order.join();
+      }
+    }
     for (const s of reportSecs) {
       s.wrap.hidden = !sections;
       if (sections) fillTerms(s.text, sections[s.name], terms);
@@ -1093,7 +1108,7 @@ export function createChrome(root, opts = {}) {
     // The default state is everything: cards and the whole report or entry.
     const cardWords = cards.reduce((n, c) => n + wordCount(c && c.body), 0);
     const visibleWords = cardWords + (sections
-      ? REPORT.reduce((n, name) => n + wordCount(sections[name]), 0)
+      ? REPORT.reduce((n, name) => n + wordCount(sections[name]), wordCount(severity))
       : wordCount(log && log.body));
     clipToColumn(fitsEntry(visibleWords, bp));
   }
