@@ -4,7 +4,7 @@
 //   node tools/seal/check_sealed.mjs [--bundle content/sealed/days.json]
 //        [--plain <days.json>] [--archive content/sealed/monument.bin]
 //
-// For every one of the 366 days it asserts, through the same loader the page uses:
+// For every one of the MISSION_DAYS (350) days it asserts, through the same loader the page uses:
 //   - one millisecond before the day's Pacific midnight the day has no record, and at midnight
 //     it opens;
 //   - the day's own date key opens it and the neighbouring dates' keys do not;
@@ -19,7 +19,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 import {
-  SEAL_FORMAT, isoDateOfDay, dayOfIsoDate, openDay, openArchive, archiveHeader, fromB64,
+  SEAL_FORMAT, isoDateOfDay, dayOfIsoDate, openDay, openArchive, archiveHeader, fromB64, LAST_DAY, MISSION_DAYS, TOUCHDOWN_DATE,
 } from '../../src/app/seal.js';
 import { loadContent, dayRecord, unlockUntil, unlockedThroughDay, resetContent } from '../../src/app/content.js';
 import { utcMsOfMissionT } from '../../src/clock.js';
@@ -38,7 +38,7 @@ export async function sweepSealed(bundle, { plain = null, archive = null } = {})
 
   if (!bundle || bundle.format !== SEAL_FORMAT) bump('format');
   const days = (bundle && bundle.days) || [];
-  if (days.length !== 366) bump('count');
+  if (days.length !== MISSION_DAYS) bump('count');
   const salt = fromB64(bundle.salt);
   const byDay = new Map();
   for (const e of days) {
@@ -55,7 +55,7 @@ export async function sweepSealed(bundle, { plain = null, archive = null } = {})
   await loadContent('sealed', { fetch: fetchJson, clock: () => new Date(utcMsOfMissionT(0) - 1) });
   if (unlockedThroughDay() !== -1 || dayRecord(0)) bump('prelaunch-open');
 
-  for (let d = 0; d <= 365; d++) {
+  for (let d = 0; d <= LAST_DAY; d++) {
     counts.days++;
     const e = byDay.get(d);
     if (!e) { bump('missing'); continue; }
@@ -70,7 +70,7 @@ export async function sweepSealed(bundle, { plain = null, archive = null } = {})
     counts.opened++;
 
     for (const other of [d - 1, d + 1]) {
-      if (other < 0 || other > 365) continue;
+      if (other < 0 || other > LAST_DAY) continue;
       try {
         await openDay(salt, { ...e, date: isoDateOfDay(other) });
         bump('opens-under-other-date');
@@ -80,7 +80,7 @@ export async function sweepSealed(bundle, { plain = null, archive = null } = {})
     await unlockUntil(noon(d));
     let replay = true;
     for (let p = 0; p <= d; p++) if (!dayRecord(p)) replay = false;
-    if (d < 365 && dayRecord(d + 1)) bump('next-day-open-at-noon');
+    if (d < LAST_DAY && dayRecord(d + 1)) bump('next-day-open-at-noon');
     if (replay) counts.replayed++;
     else bump('replay');
 
@@ -103,22 +103,22 @@ export async function sweepSealed(bundle, { plain = null, archive = null } = {})
   }
 
   // A fresh load on a sample of days, as a first visit would be: exactly 0..d open.
-  for (const d of [0, 1, 6, 7, 62, 63, 182, 338, 339, 364, 365]) {
+  for (const d of [0, 1, 6, 7, 62, 63, 182, 328, 329, LAST_DAY - 1, LAST_DAY]) {
     resetContent();
     await loadContent('sealed', { fetch: fetchJson, clock: () => noon(d) });
-    if (unlockedThroughDay() !== d || !dayRecord(d) || (d < 365 && dayRecord(d + 1))) bump('fresh-load');
+    if (unlockedThroughDay() !== d || !dayRecord(d) || (d < LAST_DAY && dayRecord(d + 1))) bump('fresh-load');
   }
   resetContent();
 
   if (archive) {
     const head = archiveHeader(archive);
-    if (head.date !== '2027-08-31' || head.format !== SEAL_FORMAT) bump('archive-header');
+    if (head.date !== TOUCHDOWN_DATE || head.format !== SEAL_FORMAT) bump('archive-header');
     try {
-      await openArchive(archive, new Date(+midnight(365) - 1));
+      await openArchive(archive, new Date(+midnight(LAST_DAY) - 1));
       bump('archive-open-early');
     } catch { /* expected */ }
     try {
-      await openArchive(archive, midnight(365));
+      await openArchive(archive, midnight(LAST_DAY));
       counts.archiveOpens = 1;
     } catch {
       bump('archive-not-open-at-touchdown');

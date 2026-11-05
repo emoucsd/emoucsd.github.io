@@ -2,7 +2,7 @@
 // time and the day's content record. Modules consume frames and never read the clock, the physics
 // table or each other, which is what lets them be built and tested independently.
 
-import { state } from '../physics.js';
+import { state, T_THROTTLE_UP, APPROACH_DAY, APPROACH_EASE_DAYS } from '../physics.js';
 import { missionTAtPacificClock, pacificHour, utcMsOfMissionT } from '../clock.js';
 import { heroLayout } from './scale.js';
 import { sunVector } from './lighting.js';
@@ -13,8 +13,19 @@ const SIDEREAL_MONTH = 27.321662;
 const DRACONIC_MONTH = 27.212221;
 
 // §6.5: the selenographic point the lunar camera faces. Near side to day 120, real libration to
-// day 300, eased toward the south pole by day 340, then settled over the polar target by day 350.
-export function moonCamera(t) {
+// day 300, eased toward the south pole by the approach (day 330), then settled over the polar
+// target APPROACH_EASE_DAYS later (day 340). The schedule was drawn for a 365-day year (ease to
+// 340, settle by 350); it runs unchanged through day 303 and the rest is squeezed to fit, so
+// days 0-303 face exactly the point they always did.
+const CAMERA_EASE_END = 340;   // the 365-day schedule's approach day
+function cameraTime(t) {
+  if (t <= T_THROTTLE_UP) return t;
+  if (t < APPROACH_DAY) return T_THROTTLE_UP + ((t - T_THROTTLE_UP) * (CAMERA_EASE_END - T_THROTTLE_UP)) / (APPROACH_DAY - T_THROTTLE_UP);
+  return CAMERA_EASE_END + ((t - APPROACH_DAY) * 10) / APPROACH_EASE_DAYS;
+}
+
+export function moonCamera(time) {
+  const t = cameraTime(time);
   const libration = (x) => ({
     lat0: 6 * Math.sin((2 * Math.PI * (x - 120)) / DRACONIC_MONTH),
     lon0: 7 * Math.sin((2 * Math.PI * (x - 120)) / SIDEREAL_MONTH),

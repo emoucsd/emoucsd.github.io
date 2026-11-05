@@ -1,8 +1,8 @@
 // Mission time and US Pacific civil time.
 //
 // All time enters the page through missionTFromDate, so tests can drive any instant. Mission
-// time t is continuous and measured in days: t = 0 is 2026-08-31 00:00 Pacific, t = 365 is
-// touchdown at 2027-08-31 00:00 Pacific. The integer part is the count of Pacific midnights
+// time t is continuous and measured in days: t = 0 is 2026-08-31 00:00 Pacific, t = LAST_DAY (349)
+// is touchdown at 2027-08-15 00:00 Pacific. The integer part is the count of Pacific midnights
 // since launch, so no day is ever skipped or repeated. The fractional part is the share of the
 // current Pacific day elapsed, measured against that day's true length, so the 23- and 25-hour
 // days at the daylight-saving changes still run from 0 to 1 and mission time never runs
@@ -20,6 +20,11 @@ function civilDayNumber(year, month, day) {
 }
 
 export const LAUNCH_DAY_NUMBER = civilDayNumber(2026, 8, 31);
+
+// The mission's last day index: touchdown, 2027-08-15. Every day count on the page, in the seal
+// and in the tools derives from this one constant (days 0..LAST_DAY, MISSION_DAYS of them).
+export const LAST_DAY = 349;
+export const MISSION_DAYS = LAST_DAY + 1;
 
 // UTC midnight of the nth Sunday of a month, month counted from 0.
 function nthSunday(year, monthIndex, n) {

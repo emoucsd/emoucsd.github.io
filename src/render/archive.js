@@ -6,7 +6,7 @@
 // a scene drawing. It never interprets content strings as markup.
 
 import { state, PHASES } from '../physics.js';
-import { missionTAtPacificClock, pacificStamp } from '../clock.js';
+import { missionTAtPacificClock, pacificStamp, LAST_DAY, MISSION_DAYS } from '../clock.js';
 import { renderFigure } from './figures.js';
 import { renderMarks } from './marks.js';
 import { REPORT_SECTIONS, reportOrder } from './util.js';
@@ -20,7 +20,7 @@ const SECTION_NAMES = REPORT_SECTIONS;
 export function clampToday(today) {
   const n = Math.floor(Number(today));
   if (!Number.isFinite(n)) return 0;
-  return Math.max(0, Math.min(365, n));
+  return Math.max(0, Math.min(LAST_DAY, n));
 }
 
 export function padDay(day) {
@@ -164,8 +164,8 @@ export function createArchive(root, opts = {}) {
   root.appendChild(archive);
   root.appendChild(control);
 
-  const heights = new Array(366);
-  for (let i = 0; i < 366; i++) heights[i] = ROW_ESTIMATE;
+  const heights = new Array(MISSION_DAYS);
+  for (let i = 0; i < MISSION_DAYS; i++) heights[i] = ROW_ESTIMATE;
 
   const pool = [];
   let openState = false;

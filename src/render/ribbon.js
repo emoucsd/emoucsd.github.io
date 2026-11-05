@@ -12,12 +12,12 @@
 //
 // The ruler is the only scrub control. Future days are absence. Nothing on the ribbon fills.
 
-import { apogee, moonCentreRange, state, MOON_DIST, T_CAPTURE } from '../physics.js';
+import { apogee, moonCentreRange, state, MOON_DIST, T_CAPTURE, T_CONTACT } from '../physics.js';
 import { PALETTE } from './palette.js';
 import { clamp, fmt, el, setAttrs } from './util.js';
 
 export const ORRERY_SIZE = 92;
-export const RULER_DAYS = 365;
+export const RULER_DAYS = T_CONTACT;
 export const ENVELOPE_TURNS = 1.25;
 
 const LOG_R0 = Math.log(6500);
@@ -26,7 +26,7 @@ const LOG_DEN = LOG_R1 - LOG_R0;
 const EARTH_R = 2.5;       // 5px disc
 const MOON_R = 1.25;       // 2.5px disc
 const CRAFT_GAP = 1.5;     // 3px gap in the stroke
-const MISSION_END = 365;
+const MISSION_END = T_CONTACT;
 
 const KIND = {
   ordinary: { h: 7, w: 1, color: PALETTE['bone-faint'], token: 'bone-faint' },

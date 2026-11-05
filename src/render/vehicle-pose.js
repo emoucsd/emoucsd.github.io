@@ -3,6 +3,7 @@
 // rendered day n−1, so a viewer can arrive at any day cold.
 
 import { SETPIECES } from './setpieces.js';
+import { DESCENT_DAY } from '../physics.js';
 import { clamp, smoothstep, DEG } from './util.js';
 
 function beatU(event, frame) {
@@ -12,7 +13,7 @@ function beatU(event, frame) {
 }
 
 // AppendageDeploy: earlier days take the final value; the current day interpolates
-// linearly in displayed-day hours so day-363 18:00 is legs = 0.75 = 56°.
+// linearly in displayed-day hours so legs-day (347) 18:00 is legs = 0.75 = 56°.
 function appendageValue(event, frame) {
   const from = event.from ?? 0;
   const to = event.to ?? 1;
@@ -106,7 +107,7 @@ export function vehiclePose(frame) {
     ion: { on: ionOn, throttle: ionOn ? (frame.day < 7 ? 0.4 : 1) : 0 },
     descent: { on: descentOn, flickerHz: descentOn ? 12 : 0 },
     attitude: { on: attitudeOn },
-    shadow: frame.day >= 364,
+    shadow: frame.day >= DESCENT_DAY,
     headingDeg,
   };
 }

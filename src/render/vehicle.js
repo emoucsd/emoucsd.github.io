@@ -10,6 +10,7 @@ import { PALETTE } from './palette.js';
 import { hullFill } from './lighting.js';
 import { vehiclePose } from './vehicle-pose.js';
 import { SETPIECES } from './setpieces.js';
+import { T_CAPTURE, SECOND_STEP_DAY, CONTACT_DAY } from '../physics.js';
 
 // Nominal on-screen size per breakpoint. The name is historical: it is now the rocket's length
 // from nose to nozzle exit, in view units at ship scale 1.
@@ -169,14 +170,14 @@ function puffState(frame) {
   if (!frame.live || frame.reducedMotion || frame.present === false) {
     return { on: false, drift: 0 };
   }
-  if (frame.day < 1 || frame.day >= 365) return { on: false, drift: 0 };
+  if (frame.day < 1 || frame.day >= CONTACT_DAY) return { on: false, drift: 0 };
   const rng = seeded(PUFF_SEED + frame.day * 17);
   let lo = 8;
   let hi = 20;
-  if (frame.day >= 347) {
+  if (frame.day >= SECOND_STEP_DAY) {
     lo = 2;
     hi = 5;
-  } else if (frame.day >= 339) {
+  } else if (frame.day >= T_CAPTURE) {
     lo = 4;
     hi = 8;
   }

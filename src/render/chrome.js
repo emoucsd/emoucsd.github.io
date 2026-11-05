@@ -1,19 +1,20 @@
 // Page chrome: telemetry corners, the log column, reading view, settings and
 // the mission-brief marker. These sit in front of the stage and never draw
 // the scene. Values come from a Frame; this module does not read the clock
-// or the physics table itself.
+// or the physics table itself (it imports only the timeline's display days).
 //
-// Telemetry holds the §7.4 set through day 339, re-bases at the Moon
-// reference, gains thrust hours from day 347, then swaps to a descent set
+// Telemetry holds the §7.4 set through capture (day 329), re-bases at the Moon
+// reference, gains thrust hours from day 335, then swaps to a descent set
 // and a three-line monument set. Numbers snap; they never roll.
 //
 // The overlay log lives in the lower right, top at 40% of the stage, so the
-// Moon's upper-right quarter stays clear through the tableau (days 7–339); the
+// Moon's upper-right quarter stays clear through the tableau (days 7–329); the
 // top is the same on every day. Owner, 2026-09-14 (third pass): the column is one
 // scroll region at every width, in a fixed order that ends with the reference note
 // line, with a soft fade and a label-style cue at the fold naming what lies below.
 
 import { heroLayout } from './scale.js';
+import { SECOND_STEP_DAY, CONTACT_DAY } from '../physics.js';
 import { sliceTransform } from './project.js';
 import { renderMarks } from './marks.js';
 import { REPORT_SECTIONS, reportOrder } from './util.js';
@@ -281,10 +282,10 @@ export function padDay(day) {
 function monumentLines(frame) {
   const s = frame && frame.state ? frame.state : {};
   const t = Number(s.t != null ? s.t : frame && frame.t);
-  const since = Number.isFinite(t) ? Math.max(0, t - 365) : 0;
+  const since = Number.isFinite(t) ? Math.max(0, t - CONTACT_DAY) : 0;
   return [
     { label: 'on the surface', value: '—' },
-    { label: 'mission day', value: '365' },
+    { label: 'mission day', value: String(CONTACT_DAY) },
     { label: 'time since contact', value: formatClock(since) },
   ];
 }
@@ -324,9 +325,9 @@ export function telemetryLines(frame, breakpoint) {
   const dv = { label: 'delta-v remaining', value: formatDv(s.deltaVRemaining) };
   const phase = { label: 'phase', value: String(s.phaseLabel || '') };
   const ttd = { label: 'time to touchdown', value: formatDuration(s.timeToTouchdown) };
-  // Second escalation step: one extra line from day 347. Physics already freezes
+  // Second escalation step: one extra line from day 335. Physics already freezes
   // the integral at jettison, so the printed number holds through parking orbit.
-  const showThrust = Number(frame && frame.day) >= 347;
+  const showThrust = Number(frame && frame.day) >= SECOND_STEP_DAY;
   const thrust = showThrust
     ? { label: 'thrust hours', value: formatThrustHours(s.thrustHours) }
     : null;

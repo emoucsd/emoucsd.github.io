@@ -7,6 +7,7 @@
 // construction, and equal angles on the crossover day still draw equal discs.
 
 import { clamp, lerp, smoothstep } from './util.js';
+import { APPROACH_DAY, APPROACH_EASE_DAYS } from '../physics.js';
 
 export const VIEW = { w: 1600, h: 900 };
 
@@ -88,7 +89,7 @@ export function heroLayout(s, aspect = VIEW.w / VIEW.h) {
         ship: ship(SHIP_TABLEAU),
       };
     case 'approach': {
-      const u = smoothstep((s.t - 340) / 10);
+      const u = smoothstep((s.t - APPROACH_DAY) / APPROACH_EASE_DAYS);
       const anchor = { x: lerp(MOON_ANCHOR.x, MOON_ANCHOR_APPROACH.x, u), y: lerp(MOON_ANCHOR.y, MOON_ANCHOR_APPROACH.y, u) };
       const rail = { x: lerp(SHIP_TABLEAU.x, SHIP_APPROACH.x, u), y: lerp(SHIP_TABLEAU.y, SHIP_APPROACH.y, u) };
       return {

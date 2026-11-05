@@ -1,12 +1,12 @@
 # Mission Clock
 
 A single static page that renders a spacecraft's transit from Earth to the Moon, stretched
-across exactly 365 real days.
+across exactly 349 real days (days 0 to 349; shortened from 365 on 2026-11-05).
 
 | | |
 |---|---|
 | Launch | 2026-08-31 |
-| Touchdown | 2027-08-31 |
+| Touchdown | 2027-08-15 (day 349) |
 | Clock | Anchored permanently to US Pacific time |
 
 The page derives its entire state from the current time. There is no backend, no database, no
@@ -32,7 +32,7 @@ table, rendering, layout, schemas, encryption, testing, deployment. It contains 
 and is safe to read at any time.
 
 The companion content spec holds the world, the voice and the arc. It is encrypted and sealed
-to unlock on 2027-08-31, at which point it becomes part of the monument rather than a spoiler.
+to unlock on 2027-08-15, at which point it becomes part of the monument rather than a spoiler.
 
 ## Status
 

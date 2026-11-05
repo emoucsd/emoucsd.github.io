@@ -4,7 +4,8 @@
 // Drawing modules never read this file: they consume Frames from buildFrame. Local
 // storage holds only the two §9 keys, and every read is wrapped in try/catch.
 
-import { missionTFromDate } from '../clock.js';
+import { missionTFromDate, LAST_DAY } from '../clock.js';
+import { APPROACH_DAY, DESCENT_DAY } from '../physics.js';
 import { buildFrame } from '../render/frame.js';
 import { smoothstep } from '../render/util.js';
 import { VEHICLE_EVENT_OPS } from '../render/setpieces.js';
@@ -23,11 +24,13 @@ const ALLOWED_KEYS = new Set(Object.values(STORAGE_KEYS));
 
 export const TRANSITIONS = Object.freeze([
   { at: 7, durationMs: 1200 },
-  { at: 340, durationMs: 8000 },
-  { at: 364, durationMs: 1200 },
+  { at: APPROACH_DAY, durationMs: 8000 },
+  { at: DESCENT_DAY, durationMs: 1200 },
 ]);
 
-export const ACT_DAYS = Object.freeze([0, 7, 340, 364, 365]);
+// Mode boundaries the scrubber snaps to: launch, the tableau, the approach (330), descent (348)
+// and contact (349).
+export const ACT_DAYS = Object.freeze([0, 7, APPROACH_DAY, DESCENT_DAY, LAST_DAY]);
 
 export function readStorage(key, store) {
   if (!ALLOWED_KEYS.has(key)) return null;
@@ -53,7 +56,7 @@ export function writeStorage(key, value, store) {
 }
 
 export function clampDayToToday(day, today) {
-  const cap = Math.max(0, Math.min(365, Math.floor(Number(today))));
+  const cap = Math.max(0, Math.min(LAST_DAY, Math.floor(Number(today))));
   const d = Math.floor(Number(day));
   if (!Number.isFinite(d)) return 0;
   if (!Number.isFinite(cap)) return 0;
@@ -69,7 +72,7 @@ export function parseMissionUrl(search, hash, { now = new Date() } = {}) {
     if (!Number.isNaN(+parsed)) clock = parsed;
   }
   const liveT = missionTFromDate(clock);
-  const today = clampDayToToday(Math.floor(liveT), 365);
+  const today = clampDayToToday(Math.floor(liveT), LAST_DAY);
 
   const liveParam = q.get('live');
   let live = !(liveParam === '0' || liveParam === 'false');
@@ -123,7 +126,7 @@ export function transitionFor(fromT, toT, { reducedMotion = false, loading = fal
 
 function daysMeta() {
   const rows = [];
-  for (let i = 0; i <= 365; i++) {
+  for (let i = 0; i <= LAST_DAY; i++) {
     const rec = dayRecord(i);
     const visuals = (rec && rec.visuals) || [];
     rows.push({
@@ -272,7 +275,7 @@ export async function boot(win = globalThis) {
   const draw = (nowMs) => {
     const t0 = nowFn();
     const liveT = liveMissionT();
-    const today = clampDayToToday(Math.floor(liveT), 365);
+    const today = clampDayToToday(Math.floor(liveT), LAST_DAY);
     maybeUnlock(liveT < 0 ? -1 : today);
     let t;
     let live;
@@ -377,7 +380,7 @@ export async function boot(win = globalThis) {
 
     const scenePromise = createScene(doc, {
       onScrub(day) {
-        const today = clampDayToToday(Math.floor(liveMissionT()), 365);
+        const today = clampDayToToday(Math.floor(liveMissionT()), LAST_DAY);
         const d = clampDayToToday(day, today);
         following = false;
         pinnedT = d;
@@ -415,7 +418,7 @@ export async function boot(win = globalThis) {
     // The archive (spec §7.3a) is a view of history, not a Frame drawing module, so it mounts
     // beside the scene rather than in the registry. It never offers a day beyond today, and
     // choosing a day pins the stage to that day's 18:00 Pacific archive pose.
-    const todayIndex = () => clampDayToToday(Math.floor(liveMissionT()), 365);
+    const todayIndex = () => clampDayToToday(Math.floor(liveMissionT()), LAST_DAY);
     try {
       archive = createArchive(doc.body, {
         getDay: (i) => (i > todayIndex() ? null : dayRecord(i)),

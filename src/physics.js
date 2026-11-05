@@ -9,8 +9,16 @@
 // and the sun and phase geometry for the displayed date.
 //
 // Mission time t is in days; t = 0 is 2026-08-31 00:00 Pacific. See clock.js.
+//
+// Retimed 2026-11-05: touchdown moved from day 365 to day 349. Days 0-303 had already been
+// tuned (and partly read) against the 365-day profile, so up to T_THROTTLE_UP this file
+// evaluates exactly the old curves with exactly the old arithmetic, and tests/physics.test.mjs
+// proves state(t) bit-for-bit unchanged there. At day 303 the ion thruster is commanded up by
+// THROTTLE (46 mN to about 63.7 mN, same Isp, so mass flow rises with it) and the Earth spiral
+// runs the old day-303-to-339 curves in 26 days instead of 36. The lunar phase is re-anchored on
+// the new event days, and the descent keeps its old durations, 16 days earlier.
 
-import { utcMsOfMissionT } from './clock.js';
+import { utcMsOfMissionT, LAST_DAY } from './clock.js';
 
 // Constants
 export const MU_EARTH = 398600.4418;      // km^3/s^2
@@ -28,26 +36,36 @@ export const XENON_LOAD = 46.0;
 export const LANDER_WET = 175.0;
 export const LANDER_DRY = 83.0;
 export const LANDER_RESIDUAL = 2.0;
-export const THRUST_N = 0.046;
+export const THRUST_N = 0.046;            // ion thruster, commanded level until T_THROTTLE_UP
 export const ISP_ION = 2000.0;
 export const ISP_CHEM = 319.5;
-export const THRUST_HOURS_AT_JETTISON = 5044.0;
+// The duty-cycle tuning: the thrust-hour total the 365-day profile reached at jettison. It fixes
+// the duty scale and so every value through day 303; the retimed total is THRUST_HOURS_AT_JETTISON.
+export const THRUST_HOURS_TUNED = 5044.0;
 
 // Timeline, mission days
 export const T_IGNITION = 6 + 14 / 24;
 export const T_FULL = 7.0;
 export const T_CROSSOVER = 259.0;          // the tuning anchor; the page reads crossoverDay()
-export const T_CAPTURE = 339.0;
-export const T_MOON_REFERENCE = 342.0;
-export const T_LOWER = 346.0;
-export const T_LOW_ORBIT = 361.0;
-export const T_JETTISON = 362 + 10 / 24;
-export const T_LEGS = 363.0;
-export const T_CONTACT = 365.0;
+export const T_THROTTLE_UP = 303.0;        // last day of the 365-day profile; ion thrust raised
+export const T_CAPTURE = 329.0;
+export const T_MOON_REFERENCE = 331.0;
+export const T_LOWER = 334.0;
+export const T_LOW_ORBIT = 345.0;
+export const T_JETTISON = 346 + 10 / 24;
+export const T_LEGS = 347.0;
+export const T_CONTACT = LAST_DAY;         // 349: touchdown, 2027-08-15 00:00 Pacific
 export const PDI_MIN = 14.4;
 export const DEORBIT_MIN = 7.0;
 export const DEORBIT_KG = 6.5;
 export const PDI_KG = LANDER_WET - LANDER_DRY - LANDER_RESIDUAL - DEORBIT_KG;
+
+// The 365-day profile's capture and jettison: the spiral curves are anchored on them, and the
+// thrust after day 303 is set so the spiral reaches the old day-339 orbit on T_CAPTURE.
+const TUNED_CAPTURE = 339.0;
+const TUNED_JETTISON = 362 + 10 / 24;
+export const THROTTLE = (TUNED_CAPTURE - T_THROTTLE_UP) / (T_CAPTURE - T_THROTTLE_UP);   // 36/26
+export const THRUST_HIGH_N = THRUST_N * THROTTLE;
 
 // Geometry anchors
 export const RP_GTO = R_EARTH + 250.0;
@@ -94,17 +112,25 @@ function distForDia(radius, degrees) {
   return radius / Math.sin((degrees / 2) * RAD);
 }
 
-// Earth spiral
+// Earth spiral. The curves live in the 365-day profile's time; spiralTime maps mission time onto
+// it, the identity through day 303 and THROTTLE times faster after, so the orbit grows with the
+// thrust and reaches the old capture orbit on T_CAPTURE.
 export const RA_CAPTURE = MOON_DIST - distForDia(R_MOON, 6.0);
-const raCurve = pchip([T_FULL, T_CROSSOVER, T_CAPTURE], [RA_GTO, 302106.0, RA_CAPTURE]);
-const rpCurve = pchip([T_FULL, 90.0, T_CAPTURE], [RP_GTO, 20000.0, 40000.0]);
+const raCurve = pchip([T_FULL, T_CROSSOVER, TUNED_CAPTURE], [RA_GTO, 302106.0, RA_CAPTURE]);
+const rpCurve = pchip([T_FULL, 90.0, TUNED_CAPTURE], [RP_GTO, 20000.0, 40000.0]);
+
+function spiralTime(t) {
+  if (t <= T_THROTTLE_UP) return t;
+  if (t >= T_CAPTURE) return TUNED_CAPTURE;
+  return T_THROTTLE_UP + (t - T_THROTTLE_UP) * THROTTLE;
+}
 
 export function apogee(t) {
-  return t <= T_FULL ? RA_GTO : raCurve(Math.min(t, T_CAPTURE));
+  return t <= T_FULL ? RA_GTO : raCurve(Math.min(spiralTime(t), TUNED_CAPTURE));
 }
 
 export function perigee(t) {
-  return t <= T_FULL ? RP_GTO : rpCurve(Math.min(t, T_CAPTURE));
+  return t <= T_FULL ? RP_GTO : rpCurve(Math.min(spiralTime(t), TUNED_CAPTURE));
 }
 
 export function semiMajorAxis(t) {
@@ -124,41 +150,64 @@ export function orbitalEnergy(t) {
   return -MU_EARTH / (2 * semiMajorAxis(t));
 }
 
-// Duty cycle: a plausible shape, scaled so the thrust-hour total at jettison is exact.
+// Duty cycle: the share of time the thruster fires at its commanded level. A plausible shape,
+// scaled once by the 365-day thrust-hour tuning. After the throttle-up the spiral keeps its 0.62
+// shape (the extra thrust is what shortens it); the lunar phase fires just long enough to spend
+// the xenon the old profile spent there, so the stack arrives at jettison with the same mass.
+const LUNAR_SHAPE = (0.7 * (TUNED_JETTISON - TUNED_CAPTURE)) / ((T_JETTISON - T_CAPTURE) * THROTTLE);
+
 function dutyShape(t) {
   if (t < T_IGNITION || t >= T_JETTISON) return 0;
   if (t < T_FULL) return 0.4;
   if (t < 90) return 0.5 + (0.1 * (t - T_FULL)) / (90 - T_FULL);
   if (t < T_CAPTURE) return 0.62;
-  return 0.7;
+  return LUNAR_SHAPE;
 }
 
-function shapeIntegral(t) {
+function shapeIntegral(t, capture, jettison, lunar) {
   const span = (a, b) => (t > a ? Math.max(0, Math.min(t, b) - a) : 0);
   let total = 0.4 * span(T_IGNITION, T_FULL);
   const x = span(T_FULL, 90.0);
   total += 0.5 * x + (0.1 * x * x) / (2 * (90.0 - T_FULL));
-  total += 0.62 * span(90.0, T_CAPTURE);
-  total += 0.7 * span(T_CAPTURE, T_JETTISON);
+  total += 0.62 * span(90.0, capture);
+  total += lunar * span(capture, jettison);
   return total;
 }
 
-const DUTY_SCALE = THRUST_HOURS_AT_JETTISON / (24 * shapeIntegral(T_JETTISON));
+const DUTY_SCALE = THRUST_HOURS_TUNED / (24 * shapeIntegral(TUNED_JETTISON, TUNED_CAPTURE, TUNED_JETTISON, 0.7));
 
 export function duty(t) {
   return DUTY_SCALE * dutyShape(t);
 }
 
+// Hours the thruster has fired, at whatever level it was commanded.
 export function thrustHours(t) {
-  return 24 * DUTY_SCALE * shapeIntegral(Math.min(Math.max(t, 0), T_CONTACT));
+  return 24 * DUTY_SCALE * shapeIntegral(Math.min(Math.max(t, 0), T_CONTACT), T_CAPTURE, T_JETTISON, LUNAR_SHAPE);
 }
 
+export const THRUST_HOURS_AT_JETTISON = thrustHours(T_JETTISON);
+
 export const MDOT_ION = THRUST_N / (ISP_ION * G0);
+export const MDOT_ION_HIGH = THRUST_HIGH_N / (ISP_ION * G0);
 export const VE_ION = ISP_ION * G0;
 export const VE_CHEM = ISP_CHEM * G0;
 
+const HOURS_AT_THROTTLE_UP = thrustHours(T_THROTTLE_UP);
+const XENON_AT_THROTTLE_UP = MDOT_ION * HOURS_AT_THROTTLE_UP * 3600;
+
+// Commanded ion thrust, N, and the mass flow it draws while firing, kg/s.
+export function ionThrust(t) {
+  return t <= T_THROTTLE_UP ? THRUST_N : THRUST_HIGH_N;
+}
+
+export function ionMassFlow(t) {
+  return t <= T_THROTTLE_UP ? MDOT_ION : MDOT_ION_HIGH;
+}
+
+// Each thrust hour is charged at the mass flow of the level it was fired at.
 export function xenonUsed(t) {
-  return MDOT_ION * thrustHours(t) * 3600;
+  if (t <= T_THROTTLE_UP) return MDOT_ION * thrustHours(t) * 3600;
+  return XENON_AT_THROTTLE_UP + MDOT_ION_HIGH * (thrustHours(t) - HOURS_AT_THROTTLE_UP) * 3600;
 }
 
 export function xenonRemaining(t) {
@@ -258,23 +307,54 @@ export function phaseLabel(t) {
 }
 
 // Cumulative spiral revolutions on a 0.01-day midpoint grid, as the reference model builds it.
+// Through day 303 this is the 365-day profile's grid, over that profile's spiral. After the
+// throttle-up a second grid integrates the faster spiral's own periods, scaled by REV_SCALE
+// (within a few percent of one) so the last apogee still falls exactly on T_CAPTURE 00:00.
 const REV_STEP = 0.01;
-const REV = [0];
-for (let i = 0; i < Math.round(T_CAPTURE / REV_STEP); i++) {
-  REV.push(REV[REV.length - 1] + (REV_STEP * 24) / periodHours((i + 0.5) * REV_STEP));
+
+function tunedPeriodHours(u) {
+  const a = ((u <= T_FULL ? RA_GTO : raCurve(Math.min(u, TUNED_CAPTURE)))
+    + (u <= T_FULL ? RP_GTO : rpCurve(Math.min(u, TUNED_CAPTURE)))) / 2;
+  return (2 * Math.PI * Math.sqrt(a ** 3 / MU_EARTH)) / 3600;
 }
 
+const REV = [0];
+for (let i = 0; i < Math.round(TUNED_CAPTURE / REV_STEP); i++) {
+  REV.push(REV[REV.length - 1] + (REV_STEP * 24) / tunedPeriodHours((i + 0.5) * REV_STEP));
+}
+const REV_TUNED_END = REV[REV.length - 1];
+const REV_AT_THROTTLE_UP = REV[Math.round(T_THROTTLE_UP / REV_STEP)];
+
+const LATE_CELLS = Math.round((T_CAPTURE - T_THROTTLE_UP) / REV_STEP);
+const lateCell = (i) => (REV_STEP * 24) / periodHours(T_THROTTLE_UP + (i + 0.5) * REV_STEP);
+let lateKepler = 0;
+for (let i = 0; i < LATE_CELLS; i++) lateKepler += lateCell(i);
+const OLD_LATE = REV_TUNED_END - REV_AT_THROTTLE_UP;
+export const REV_SCALE = (OLD_LATE - Math.round(OLD_LATE - lateKepler)) / lateKepler;
+const REV_LATE = [REV_AT_THROTTLE_UP];
+for (let i = 0; i < LATE_CELLS; i++) REV_LATE.push(REV_LATE[i] + REV_SCALE * lateCell(i));
+const REV_END = REV_LATE[LATE_CELLS];
+
 export function revolutionNumber(t) {
-  const c = Math.min(Math.max(t, 0), T_CAPTURE);
-  return Math.floor(REV[Math.min(Math.trunc(c / REV_STEP), REV.length - 1)]);
+  if (t <= T_THROTTLE_UP) {
+    const c = Math.max(t, 0);
+    return Math.floor(REV[Math.min(Math.trunc(c / REV_STEP), REV.length - 1)]);
+  }
+  const c = Math.min(t, T_CAPTURE);
+  return Math.floor(REV_LATE[Math.min(Math.trunc((c - T_THROTTLE_UP) / REV_STEP), LATE_CELLS)]);
 }
 
 // Continuous revolutions: the grid, integrated linearly within each cell.
 function revolutions(t) {
-  if (t >= T_CAPTURE) return REV[REV.length - 1];
-  const c = Math.max(t, 0);
-  const i = Math.min(Math.floor(c / REV_STEP), REV.length - 2);
-  return REV[i] + ((c - i * REV_STEP) * 24) / periodHours((i + 0.5) * REV_STEP);
+  if (t <= T_THROTTLE_UP) {
+    const c = Math.max(t, 0);
+    const i = Math.min(Math.floor(c / REV_STEP), REV.length - 2);
+    return REV[i] + ((c - i * REV_STEP) * 24) / tunedPeriodHours((i + 0.5) * REV_STEP);
+  }
+  if (t >= T_CAPTURE) return REV_END;
+  const i = Math.min(Math.floor((t - T_THROTTLE_UP) / REV_STEP), LATE_CELLS - 1);
+  const into = t - (T_THROTTLE_UP + i * REV_STEP);
+  return REV_LATE[i] + (REV_SCALE * into * 24) / periodHours(T_THROTTLE_UP + (i + 0.5) * REV_STEP);
 }
 
 function eccentricAnomaly(mean, e) {
@@ -288,11 +368,13 @@ function eccentricAnomaly(mean, e) {
 }
 
 // Position on the current spiral ellipse. The anomaly is phased backwards from capture, so the
-// last spiral apogee falls exactly at day 339 00:00 and the range hands over without a jump.
+// last spiral apogee falls exactly at T_CAPTURE 00:00 and the range hands over without a jump.
+// Through day 303 the phase is the 365-day profile's; the late grid differs from it by a whole
+// number of turns at the throttle-up, so the craft does not jump there either.
 function spiralPosition(t) {
   const a = semiMajorAxis(t);
   const e = eccentricity(t);
-  const turns = revolutions(t) - REV[REV.length - 1];
+  const turns = t <= T_THROTTLE_UP ? revolutions(t) - REV_TUNED_END : revolutions(t) - REV_END;
   const mean = ((((Math.PI + 2 * Math.PI * turns) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI));
   const E = eccentricAnomaly(mean, e);
   const trueAnomaly = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
@@ -311,7 +393,7 @@ const V_PARKING = 1000 * Math.sqrt(MU_MOON / LOW_ORBIT_R);
 const V_APOLUNE = 1000 * Math.sqrt(MU_MOON * (2 / LOW_ORBIT_R - 1 / A_T));
 const V_PERILUNE = 1000 * Math.sqrt(MU_MOON * (2 / PERILUNE_R - 1 / A_T));
 
-// Speed relative to the reference body, m/s. Continuous except at day 342, where the
+// Speed relative to the reference body, m/s. Continuous except at T_MOON_REFERENCE, where the
 // reference body changes from Earth to the Moon and the readout changes frame with it.
 export function velocity(t) {
   const c = Math.min(Math.max(t, 0), T_CONTACT);
@@ -353,10 +435,20 @@ function deltaVSpent(t) {
   return electric + VE_CHEM * Math.log(LANDER_WET / mass(t));
 }
 
+// The spiral's share of the whole arc. The retimed profile spends the same xenon by capture and
+// by jettison as the 365-day one did, so the share is taken from that profile's own arithmetic:
+// trajectoryFraction through day 303 stays bit-for-bit what it was.
+function tunedXenonUsed(u) {
+  return MDOT_ION * (24 * DUTY_SCALE * shapeIntegral(u, TUNED_CAPTURE, TUNED_JETTISON, 0.7)) * 3600;
+}
+const TUNED_SPIRAL_DV = VE_ION * Math.log(STACK_WET / (STACK_WET - tunedXenonUsed(TUNED_CAPTURE)));
+const TUNED_TOTAL_DV = VE_ION * Math.log(STACK_WET / (STACK_WET - tunedXenonUsed(TUNED_JETTISON)))
+  + VE_CHEM * Math.log(LANDER_WET / (LANDER_DRY + LANDER_RESIDUAL));
+
 const E_START = orbitalEnergy(0);
 const E_CAPTURE = orbitalEnergy(T_CAPTURE);
 const LOG_RC_CAPTURE = Math.log(moonCentreRange(T_CAPTURE));
-const SPIRAL_SHARE = deltaVSpent(T_CAPTURE) / deltaVSpent(T_CONTACT);
+const SPIRAL_SHARE = TUNED_SPIRAL_DV / TUNED_TOTAL_DV;
 
 // Position along the arc, 0 at launch and 1 at contact. The spiral advances with orbital
 // energy and the arrival with the logarithm of distance to the Moon's centre; the two are
@@ -370,10 +462,11 @@ export function trajectoryFraction(t) {
 }
 
 // The day Earth and the Moon subtend the same angle in the hero view, read from the model and
-// never written down, so a retuned profile moves the beat with it.
+// never written down, so a retuned profile moves the beat with it. Bracketed on the 365-day
+// spiral's span, which keeps every probe before day 303 and the answer bit-for-bit as it was.
 export function crossoverDay() {
   let lo = T_FULL;
-  let hi = T_CAPTURE;
+  let hi = TUNED_CAPTURE;
   for (let i = 0; i < 60; i++) {
     const mid = (lo + hi) / 2;
     if (heroEarthAngularDia(mid) > heroMoonAngularDia(mid)) lo = mid;
@@ -407,11 +500,25 @@ export function sky(t) {
   return { sunLongitude, sunDeclination, moonLongitude, elongation };
 }
 
+// Display days (system spec §7.7.3), all derived from the timeline. The hero view changes mode on
+// the day after capture (330) and on the last day before contact (348); the approach anchor eases
+// over APPROACH_EASE_DAYS from APPROACH_DAY. The escalation's second step (11° to 40°: telemetry
+// gains thrust hours, figures every second day, faster puffs) starts the day after lowering
+// begins (335). The third step is one mechanical beat a day: jettison (346), legs (347),
+// descent (348), contact (349).
+export const APPROACH_DAY = T_CAPTURE + 1;
+export const APPROACH_EASE_DAYS = 10;
+export const SECOND_STEP_DAY = T_LOWER + 1;
+export const JETTISON_DAY = Math.floor(T_JETTISON);
+export const LEGS_DAY = T_LEGS;
+export const DESCENT_DAY = T_CONTACT - 1;
+export const CONTACT_DAY = T_CONTACT;
+
 export function mode(t) {
   if (t < 0) return 'prelaunch';
   if (t < T_FULL) return 'limb';
-  if (t < 340) return 'tableau';
-  if (t < 364) return 'approach';
+  if (t < APPROACH_DAY) return 'tableau';
+  if (t < DESCENT_DAY) return 'approach';
   if (t < T_CONTACT) return 'descent';
   return 'monument';
 }

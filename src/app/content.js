@@ -5,7 +5,7 @@
 // - sealed (the published shape, spec §10): { format: 'mission-clock-sealed/1', salt, days: [
 //   { day, date, iv, ct } ] }. Only days the clock has reached are opened (src/app/seal.js), and
 //   a day that is still sealed has no record: dayRecord returns null for it.
-// - plaintext (development and the Phase 4 harness only): a JSON array of 366 records. It is
+// - plaintext (development and the Phase 4 harness only): a JSON array of MISSION_DAYS (350) records. It is
 //   never published; tools/seal/verify_publish.mjs fails if one would be.
 //
 // The path is resolved from this module so the same fetch works from index.html and from a

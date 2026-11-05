@@ -13,12 +13,11 @@
 // resealing unchanged content reproduces the committed bytes, and changed content never reuses
 // an IV under the same key.
 
-import { missionTFromDate } from '../clock.js';
+import { missionTFromDate, LAST_DAY, MISSION_DAYS } from '../clock.js';
 
+export { LAST_DAY, MISSION_DAYS };
 export const SEAL_FORMAT = 'mission-clock-sealed/1';
 export const PAD_BLOCK = 2048;
-export const TOUCHDOWN_DATE = '2027-08-31';
-export const LAST_DAY = 365;
 
 const MAGIC = 'MCSEAL1\n';
 const DAY_MS = 86400000;
@@ -35,13 +34,16 @@ export function isoDateOfDay(day) {
   return new Date(LAUNCH_UTC + day * DAY_MS).toISOString().slice(0, 10);
 }
 
+// Touchdown's ISO date, 2027-08-15: the date the content-spec archive is sealed to.
+export const TOUCHDOWN_DATE = isoDateOfDay(LAST_DAY);
+
 export function dayOfIsoDate(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso));
   if (!m) return NaN;
   return Math.round((Date.UTC(+m[1], +m[2] - 1, +m[3]) - LAUNCH_UTC) / DAY_MS);
 }
 
-// The last day index the clock allows to be opened: -1 before launch, 365 from touchdown on.
+// The last day index the clock allows to be opened: -1 before launch, LAST_DAY from touchdown on.
 export function unlockedThrough(date) {
   const t = missionTFromDate(date);
   if (!Number.isFinite(t) || t < 0) return -1;
